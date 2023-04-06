@@ -16,4 +16,4 @@ Controls\ contains game specific Controls like a game cell, that can display eit
 The rest should be fairly straight-forward
 
 ## Building
-You may have to run dotnet restore before the first build. Otherwise there should be no issues building and running the windows configuration. (I'm unable to test on independent machine at this point)
+You may have to run "dotnet restore" before the first build. Otherwise there should be no issues building and running the windows configuration. (I'm unable to test on independent machine at this point)
