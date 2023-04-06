@@ -3,6 +3,9 @@
 ## Structure
 There are only two projects - the YASudoku.csproj in the root and YASudoku.Tests.csproj under YASudoku.Tests\
 
+## Notes
+- Explicit nullables are required in both projects
+
 ### Important parts
 Most of the logic for new game generation is under Models\PuzzleGenerator, Models\PuzzleResolver and Models\PuzzleValidator.
 
