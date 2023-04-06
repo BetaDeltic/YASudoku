@@ -72,8 +72,7 @@ public static class MauiProgram
     private static void SetupSerilog()
     {
         TimeSpan flushInterval = TimeSpan.FromSeconds( 1 );
-        //string file = Path.Combine( FileSystem.AppDataDirectory, "logs", "YASudoku.log" );
-        string file = Path.Combine( @"C:\Temp", "logs", "YASudoku.log" );
+        string file = Path.Combine( FileSystem.AppDataDirectory, "logs", "YASudoku.log" );
 
         Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
