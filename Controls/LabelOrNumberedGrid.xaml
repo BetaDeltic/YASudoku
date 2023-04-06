@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="YASudoku.Controls.LabelOrNumberedGrid"
+             x:Name="this"
+>
+    <Grid BindingContext="{x:Reference this}" BackgroundColor="{Binding BackgroundColor}" >
+        <Label 
+            Text="{Binding Text}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            IsVisible="{Binding IsLabelVisible}"
+            TextColor="{Binding TextColor}"
+            FontAttributes="{Binding FontAttributes}"
+            Grid.Row="0"
+            Grid.Column="0"
+            FontSize="30"
+            />
+        <Grid
+            x:Name="TheGrid"
+            IsVisible="{Binding IsGridVisible}"
+            Grid.Row="0"
+            Grid.Column="0"
+            />
+    </Grid>
+</ContentView>

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:YASudoku.ViewModels"
+             x:Class="YASudoku.Views.MainPage"
+             x:DataType="vm:MainVM"
+             NavigationPage.HasBackButton="False"
+>
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+    <ScrollView>
+        <VerticalStackLayout
+            Spacing="25"
+            Padding="30,0"
+            VerticalOptions="Center">
+
+            <Button
+                x:Name="GameBtn"
+                Text="Start Game"
+                FontSize="20"
+                Command="{Binding StartGameCommand}"
+                HorizontalOptions="Center"
+                >
+            </Button>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

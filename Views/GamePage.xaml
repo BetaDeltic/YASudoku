@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:YASudoku.Controls"
+             xmlns:flyouts="clr-namespace:YASudoku.Views.Special"
+             xmlns:vm="clr-namespace:YASudoku.ViewModels.GameViewModel"
+             x:Class="YASudoku.Views.GamePage"
+             x:DataType="vm:GameVM"
+>
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+    <Grid x:Name="MainGrid" RowSpacing="25" RowDefinitions="Auto,*,Auto,Auto">
+        <VerticalStackLayout Padding="0,10,0,0" x:Name="TopButtonsStack" >
+            <Grid Padding="10,0">
+                <Button
+                    x:Name="SettingsBtn"
+                    Text="Settings"
+                    HorizontalOptions="Start"
+                />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="5" HorizontalOptions="Center" x:Name="NewGameAndRestart" >
+                    <Button
+                        x:Name="NewGameBtn"
+                        Text="New game"
+                    />
+                    <Button
+                        x:Name="RestartBtn"
+                        Text="Restart"
+                        Grid.Column="1"
+                    />
+                </Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="5" HorizontalOptions="End" x:Name="PauseAndTimer" >
+                    <Button
+                        x:Name="PauseBtn"
+                        Text="Pause"
+                    />
+                    <Label
+                        x:Name="TimerLbl"
+                        FontSize="25"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        Grid.Column="1"
+                    />
+                </Grid>
+            </Grid>
+        </VerticalStackLayout>
+        <!--<Grid x:Name="GameGrid"  Grid.Row="1" HeightRequest="{Binding Source={RelativeSource Self}, Path=Width}"/> -->
+        <!-- Workaround for having Grid of same Height and Width, until https://github.com/dotnet/maui/issues/11789 is fixed. -->
+        <Grid x:Name="GameGrid" Grid.Row="1" Padding="10,0,10,0" />
+        <Grid x:Name="NumberPad" VerticalOptions="Center" HorizontalOptions="Center" Grid.Row="2" ColumnSpacing="10" />
+        <HorizontalStackLayout x:Name="BottomButtonsStack"  Spacing="10" Padding="0,0,0,10" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="3" >
+            <Button
+                x:Name="UndoBtn"
+                Text="Undo"
+            />
+            <Button
+                x:Name="EraseBtn"
+                Text="Eraser"
+            />
+            <Button
+                x:Name="PencilBtn"
+                Text="Pencil"
+            />
+        </HorizontalStackLayout>
+        <flyouts:SettingsFlyout x:Name="SettingsFlyout" Grid.RowSpan="4" />
+    </Grid>
+</ContentPage>
