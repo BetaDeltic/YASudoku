@@ -32,7 +32,7 @@ public class CommonButtonVisualState : ObservableObject
         }
     }
 
-    private bool _isActive = false;
+    private bool _isActive;
     private Color _backgroundColor = Colors.Transparent;
     private Color _color = Colors.Transparent;
 
