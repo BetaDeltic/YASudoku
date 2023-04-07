@@ -5,6 +5,7 @@ There are only two projects - the YASudoku.csproj in the root and YASudoku.Tests
 
 ## Notes
 - Explicit nullables are required in both projects
+- Expect further polishing for the next few days
 
 ### Important parts
 Most of the logic for new game generation is under Models\PuzzleGenerator, Models\PuzzleResolver and Models\PuzzleValidator.
