@@ -1,11 +1,10 @@
 ﻿using YASudoku.Common;
-using YASudoku.Models;
 using YASudoku.Services.JournalingServices;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public partial class PressNumberCmd
+public class PressNumberCmd
 {
     private readonly CommonButtonVisualState pencil;
     private readonly CommonButtonVisualState eraser;
