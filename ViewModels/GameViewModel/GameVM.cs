@@ -157,7 +157,7 @@ public partial class GameVM : VMsBase, IDisposable
         VisualState.GameGridVS.DeselectCell();
         VisualState.GameGridVS.UnhighlightCellsWithSameNumber();
 
-        if ( VisualState.PencilVS.IsActive )
+        if ( VisualState.IsPencilActive )
             VisualState.PencilVS.DeactivateButton();
 
         journalingService.ClearJournal();
