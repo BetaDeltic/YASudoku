@@ -39,7 +39,6 @@ public partial class VisualStatesHandler : ObservableObject, IDisposable
     public bool IsEraserActive => EraserVS.IsActive;
     public bool IsPaused => PauseVS.IsActive;
 
-
     public VisualStates CurrentVisualState = VisualStates.Starting;
 
     [ObservableProperty]
