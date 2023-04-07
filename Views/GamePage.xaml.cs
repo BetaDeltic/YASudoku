@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using YASudoku.Models;
 using YASudoku.ViewModels.GameViewModel;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
 using YASudoku.Controls;
@@ -10,89 +9,76 @@ namespace YASudoku.Views;
 public partial class GamePage : ContentPage
 {
     private const int MaxGridSize = 9;
+    private const int LeftCellMargin = 5;
+    private const int TopCellMargin = 5;
+    private const int DefaultCellMargin = 2;
 
     private readonly GameVM gameVM;
 
-    private readonly TimeSpan minAnimationSpan = TimeSpan.FromMilliseconds( 500 );
-    private readonly TimeSpan maxAnimationSpan = TimeSpan.FromMilliseconds( 1000 );
+    private readonly int gridSize;
 
     public GamePage( GameVM gameVM )
     {
+        if ( gameVM.VisualState is null )
+            throw new ApplicationException( $"Attempted to initialize {nameof( GamePage )} while gameVM is not ready." );
+
         InitializeComponent();
+
         this.gameVM = gameVM;
         BindingContext = gameVM;
+        gridSize = gameVM.gridSize;
 
-        InitializeGameGrid( gameVM.gridSize );
-        InitializeNumberPad( gameVM.gridSize );
+        InitializeGameGrid();
+        InitializeNumberPad();
 
-        NewGameBtn.SetBinding( Button.CommandProperty, nameof( GameVM.StartNewGameCommand ) );
-        SetCommonButtonBindings( NewGameBtn );
-        RestartBtn.SetBinding( Button.CommandProperty, nameof( GameVM.RestartGameCommand ) );
-        SetCommonButtonBindings( RestartBtn );
-
-        PauseBtn.BindingContext = gameVM.VisualState!.PauseVS;
-        PauseBtn.SetBinding( Button.TextColorProperty, nameof( CommonButtonVisualState.TextColor ) );
-        PauseBtn.SetBinding( BackgroundColorProperty, nameof( CommonButtonVisualState.BackgroundColor ) );
-        PauseBtn.SetBinding( Button.CommandProperty, new Binding( nameof( GameVM.PauseGameCommand ), source: gameVM ) );
-
-        PencilBtn.BindingContext = gameVM.VisualState!.PencilVS;
-        PencilBtn.SetBinding( Button.TextColorProperty, nameof( CommonButtonVisualState.TextColor ) );
-        PencilBtn.SetBinding( BackgroundColorProperty, nameof( CommonButtonVisualState.BackgroundColor ) );
-        PencilBtn.SetBinding( Button.CommandProperty, new Binding( nameof( GameVM.SwitchPenAndPencilCommand ), source: gameVM ) );
-
-        EraseBtn.BindingContext = gameVM.VisualState!.EraserVS;
-        EraseBtn.SetBinding( Button.TextColorProperty, nameof( CommonButtonVisualState.TextColor ) );
-        EraseBtn.SetBinding( BackgroundColorProperty, nameof( CommonButtonVisualState.BackgroundColor ) );
-        EraseBtn.SetBinding( Button.CommandProperty, new Binding( nameof( GameVM.SelectEraserCommand ), source: gameVM ) );
-
-        SettingsBtn.SetBinding( Button.CommandProperty, nameof( GameVM.OpenSettingsCommand ) );
-        SetCommonButtonBindings( SettingsBtn );
+        InitializeButtons();
 
         SettingsFlyout.ServiceProvider = gameVM.serviceProvider;
         SettingsFlyout.SetBinding( SettingsFlyout.IsFlyoutVisibleProperty, new Binding( nameof( VisualStatesHandler.AreSettingsVisible ), BindingMode.TwoWay, source: gameVM.VisualState ) );
 
         TimerLbl.SetBinding( Label.TextProperty, new Binding( nameof( VisualStatesHandler.TimerText ), source: gameVM.VisualState ) );
 
-        UndoBtn.SetBinding( Button.CommandProperty, nameof( GameVM.UndoLastActionCommand ) );
-
-        SetCommonButtonBindings( UndoBtn );
-
         gameVM.VisualState.Victory += GameVM_Victory;
         gameVM.NewGameAfterFinishedOne += GameVM_NewGameAfterFinishedOne;
+
+        PropertyChanged += GamePage_PropertyChanged;
+        Appearing += GamePage_Appearing;
     }
 
-    private void InitializeGameGrid( int gridSize )
+    private void InitializeGameGrid()
     {
         if ( gridSize > MaxGridSize ) {
             throw new ArgumentOutOfRangeException( $"Attempted to create a game with more than {MaxGridSize}x{MaxGridSize} fields." );
         }
 
-        SetColumnAndRowGridDefinitions( gridSize );
-        InitializeIndividualGridCells( gridSize );
+        SetColumnAndRowDefinitions( GameGrid, InitGridDefinitions );
+        InitializeIndividualGridCells();
 
         GameGrid.PropertyChanged += GameGrid_PropertyChanged;
     }
 
-    private void SetColumnAndRowGridDefinitions( int gridSize )
+    private static void SetColumnAndRowDefinitions( Grid grid, Action<ColumnDefinitionCollection, RowDefinitionCollection> action )
     {
         ColumnDefinitionCollection columns = new();
         RowDefinitionCollection rows = new();
+
+        action( columns, rows );
+
+        grid.ColumnDefinitions = columns;
+        grid.RowDefinitions = rows;
+    }
+
+    private void InitGridDefinitions( ColumnDefinitionCollection columns, RowDefinitionCollection rows )
+    {
         for ( int i = 0; i < gridSize; i++ ) {
             columns.Add( new ColumnDefinition( GridLength.Star ) );
             rows.Add( new RowDefinition( GridLength.Star ) );
         }
-
-        GameGrid.ColumnDefinitions = columns;
-        GameGrid.RowDefinitions = rows;
     }
 
-    private void InitializeIndividualGridCells( int gridSize )
+    private void InitializeIndividualGridCells()
     {
-        if ( gameVM?.VisualState?.GameData == null ) throw new ApplicationException( "Trying to initialize grid cells without game data." );
-
-        const int leftMargin = 5;
-        const int topMargin = 5;
-        const int defaultMargin = 2;
+        if ( gameVM.VisualState?.GameData is null ) throw new ApplicationException( "Trying to initialize grid cells without game data." );
 
         var lineLength = gridSize switch {
             9 => 3,
@@ -101,27 +87,8 @@ public partial class GamePage : ContentPage
 
         for ( int column = 0; column < gridSize; column++ ) {
             for ( int row = 0; row < gridSize; row++ ) {
-                int cellId = row * gridSize + column;
-                bool hasLeftEdge = column != 0 && column % 3 == 0;
-                bool hasTopEdge = row != 0 && row % 3 == 0;
-                LabelOrNumberedGrid gridCell = new( lineLength, gameVM!.VisualState!.GameData![ cellId ].CandidatesGridProperties ) {
-                    Margin = new Thickness {
-                        Left = hasLeftEdge ? leftMargin : defaultMargin,
-                        Top = hasTopEdge ? topMargin : defaultMargin
-                    },
-                    BindingContext = gameVM?.VisualState.GameData?[ cellId ],
-                    CommandParameter = cellId,
-                    AutomationId = cellId.ToString(),
-                };
-                gridCell.SetBinding( LabelOrNumberedGrid.TextProperty, nameof( GameGridCellVisualData.UserFacingText ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.FontAttributesProperty, nameof( GameGridCellVisualData.FontAttribute ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.TextColorProperty, nameof( GameGridCellVisualData.TextColor ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.BackgroundColorProperty, nameof( GameGridCellVisualData.BackgroundColor ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.IsLabelVisibleProperty, nameof( GameGridCellVisualData.IsShowingValue ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.IsGridVisibleProperty, nameof( GameGridCellVisualData.IsShowingCandidates ) );
-                gridCell.SetBinding( LabelOrNumberedGrid.GridBindingListProperty, nameof( GameGridCellVisualData.CandidatesGridProperties ) );
-
-                gridCell.SetBinding( LabelOrNumberedGrid.CommandProperty, new Binding( nameof( gameVM.SelectCellCommand ) ) { Source = gameVM } );
+                LabelOrNumberedGrid gridCell = CreateNewCell( row, column, lineLength );
+                InitCellBindings( gridCell );
 
                 GameGrid.SetColumn( gridCell, column );
                 GameGrid.SetRow( gridCell, row );
@@ -130,126 +97,51 @@ public partial class GamePage : ContentPage
         }
     }
 
+    private LabelOrNumberedGrid CreateNewCell( int row, int column, int lineLength )
+    {
+        int cellId = row * gridSize + column;
+        bool hasLeftEdge = column != 0 && column % 3 == 0;
+        bool hasTopEdge = row != 0 && row % 3 == 0;
+        LabelOrNumberedGrid gridCell = new( lineLength, gameVM!.VisualState!.GameData[ cellId ].CandidatesGridProperties ) {
+            Margin = new Thickness {
+                Left = hasLeftEdge ? LeftCellMargin : DefaultCellMargin,
+                Top = hasTopEdge ? TopCellMargin : DefaultCellMargin
+            },
+            BindingContext = gameVM.VisualState.GameData[ cellId ],
+            CommandParameter = cellId,
+            AutomationId = cellId.ToString(),
+        };
+        return gridCell;
+    }
+
+    private void InitCellBindings( LabelOrNumberedGrid gridCell )
+    {
+        gridCell.SetBinding( LabelOrNumberedGrid.TextProperty, nameof( GameGridCellVisualData.UserFacingText ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.FontAttributesProperty, nameof( GameGridCellVisualData.FontAttribute ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.TextColorProperty, nameof( GameGridCellVisualData.TextColor ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.BackgroundColorProperty, nameof( GameGridCellVisualData.BackgroundColor ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.IsLabelVisibleProperty, nameof( GameGridCellVisualData.IsShowingValue ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.IsGridVisibleProperty, nameof( GameGridCellVisualData.IsShowingCandidates ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.GridBindingListProperty, nameof( GameGridCellVisualData.CandidatesGridProperties ) );
+        gridCell.SetBinding( LabelOrNumberedGrid.CommandProperty, new Binding( nameof( GameVM.SelectCellCommand ) ) { Source = gameVM } );
+    }
+
     private async void GameGrid_PropertyChanged( object? sender, PropertyChangedEventArgs e )
     {
         // Workaround for having Grid of same Height and Width, until https://github.com/dotnet/maui/issues/11789 is fixed.
         if ( e.PropertyName != nameof( GameGrid.Width ) ) return;
 
         await Dispatcher.DispatchAsync( () => { } ); // Wait for UI to be ready before measuring the width
-        if ( GameGrid.Width > 0 ) {
-            GameGrid.HeightRequest = GameGrid.Width;
-        }
+
+        if ( !( GameGrid.Width > 0 ) ) return;
+
+        GameGrid.HeightRequest = GameGrid.Width;
+        GameGrid.PropertyChanged -= GameGrid_PropertyChanged;
     }
 
-
-    private void SetCommonButtonBindings( Button button )
+    private void InitializeNumberPad()
     {
-        button.SetBinding( Button.TextColorProperty, new Binding( nameof( CommonButtonVisualState.TextColor ), source: gameVM.VisualState!.OtherButtonsVS ) );
-        button.SetBinding( BackgroundColorProperty, new Binding( nameof( CommonButtonVisualState.BackgroundColor ), source: gameVM.VisualState!.OtherButtonsVS ) );
-    }
-
-    private async void GameVM_Victory()
-    {
-        _ = Dispatcher.DispatchAsync( () => RunAnimationOnAllCellsAtRandomOrder( BlackHoleAnimation ) );
-        _ = Dispatcher.DispatchAsync( MoveIrrelevantButtonsAwayAfterVictory );
-        await Task.Delay( maxAnimationSpan );
-        _ = Dispatcher.DispatchAsync( MoveTimerToVictoryPosition );
-        _ = Dispatcher.DispatchAsync( MoveRelevantButtonsBelowTimerAfterVictory );
-    }
-
-    private void RunAnimationOnAllCellsAtRandomOrder( Action<LabelOrNumberedGrid, TimeSpan> animation )
-    {
-        List<int> cellIndexes = new( Enumerable.Range( 0, GameGrid.Children.Count ) );
-
-        Random random = new();
-        while ( cellIndexes.Count > 0 ) {
-            int cellIndex = random.Next( cellIndexes.Count );
-            IView child = GameGrid.Children[ cellIndexes[ cellIndex ] ];
-            LabelOrNumberedGrid cell = (LabelOrNumberedGrid)child;
-            int animationLength = GetRandomAnimationLength( random );
-            Dispatcher.DispatchAsync( () => animation( cell, TimeSpan.FromMilliseconds( animationLength ) ) );
-            cellIndexes.RemoveAt( cellIndex );
-        }
-    }
-
-    private int GetRandomAnimationLength( Random random )
-        => random.Next( (int)minAnimationSpan.TotalMilliseconds, (int)maxAnimationSpan.TotalMilliseconds );
-
-    private void BlackHoleAnimation( LabelOrNumberedGrid element, TimeSpan animationLength )
-    {
-        uint animationLengthInMilliseconds = (uint)animationLength.TotalMilliseconds;
-        element.ScaleTo( 0, animationLengthInMilliseconds );
-        double middleOfGameGridX = GameGrid.Width / 2;
-        double middleOfGameGridY = GameGrid.Height / 2;
-        TranslateCellToAbsolutePosition( element, middleOfGameGridX, middleOfGameGridY, animationLengthInMilliseconds );
-    }
-
-    private static void TranslateCellToAbsolutePosition( LabelOrNumberedGrid cell, double newX, double newY, uint animationLength )
-    {
-        double cellXOffset = cell.X + cell.Width / 2;
-        double cellYOffset = cell.Y + cell.Height / 2;
-        cell.TranslateTo( -cellXOffset + newX, -cellYOffset + newY, animationLength );
-    }
-
-    private void MoveIrrelevantButtonsAwayAfterVictory()
-    {
-        PauseBtn.TranslateTo( 0, -TopButtonsStack.Height );
-        BottomButtonsStack.TranslateTo( 0, BottomButtonsStack.Height );
-        NumberPad.TranslateTo( 0, -NumberPad.Height - NumberPad.X + Height );
-    }
-
-    private async Task ResetPageElementsPosition()
-    {
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( PauseBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( BottomButtonsStack, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( NumberPad, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( NewGameBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( RestartBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( TimerLbl, minAnimationSpan ) );
-        await Task.Delay( minAnimationSpan );
-    }
-
-    private void MoveTimerToVictoryPosition()
-    {
-        TimerLbl.ScaleTo( 2 );
-        TranslateTimerToAbsolutePosition( GameGrid.Width / 2, GameGrid.Height * 0.75 );
-    }
-
-    private void TranslateTimerToAbsolutePosition( double newX, double newY )
-    {
-        double timerXOffset = TimerLbl.X + PauseAndTimer.X + TimerLbl.Width / 2;
-        double timerYOffset = TimerLbl.Y + PauseAndTimer.Y + TimerLbl.Height / 2;
-        TimerLbl.TranslateTo( -timerXOffset + newX, -timerYOffset + newY );
-    }
-
-    private void MoveRelevantButtonsBelowTimerAfterVictory()
-    {
-        TranslateButtonToAbsolutePosition( NewGameBtn, GameGrid.Width / 2 - NewGameBtn.Width / 2, GameGrid.Height );
-        TranslateButtonToAbsolutePosition( RestartBtn, GameGrid.Width / 2 + RestartBtn.Width / 2, GameGrid.Height );
-    }
-
-    private void TranslateButtonToAbsolutePosition( Button button, double newX, double newY )
-    {
-        double buttonXOffset = NewGameAndRestart.X + button.Width;
-        double buttonYOffset = NewGameAndRestart.Y + button.Height;
-        button.TranslateTo( -buttonXOffset + newX, -buttonYOffset + newY );
-    }
-
-    private async void GameVM_NewGameAfterFinishedOne()
-    {
-        await ResetPageElementsPosition();
-        RunAnimationOnAllCellsAtRandomOrder( ReturnElementToOriginalPositionAndScale );
-    }
-
-    private static void ReturnElementToOriginalPositionAndScale( VisualElement element, TimeSpan animationLength )
-    {
-        element.ScaleTo( 1, (uint)animationLength.TotalMilliseconds );
-        element.TranslateTo( 0, 0, (uint)animationLength.TotalMilliseconds );
-    }
-
-    private void InitializeNumberPad( int gridSize )
-    {
-        SetColumnAndRowNumberPadDefinitions( gridSize );
+        SetColumnAndRowDefinitions( NumberPad, InitNumPadDefinitions );
 
         for ( int number = 0; number < gridSize; number++ ) {
             ButtonWithSubText button = new() {
@@ -269,10 +161,66 @@ public partial class GamePage : ContentPage
             NumberPad.SetColumn( button, number );
             NumberPad.Children.Add( button );
         }
-
-        PropertyChanged += GamePage_PropertyChanged;
-        Appearing += GamePage_Appearing;
     }
+
+    private void InitNumPadDefinitions( ColumnDefinitionCollection columns, RowDefinitionCollection rows )
+    {
+        for ( int i = 0; i < gridSize; i++ ) {
+            columns.Add( new ColumnDefinition( GridLength.Star ) );
+        }
+        rows.Add( new RowDefinition( GridLength.Star ) );
+    }
+
+    private void InitializeButtons()
+    {
+        CommonButtonVisualState commonButtonVS = gameVM.VisualState!.OtherButtonsVS;
+        SetCommonButtonBindings( NewGameBtn, commonButtonVS );
+        SetButtonCommandBinding( NewGameBtn, nameof( GameVM.StartNewGameCommand ) );
+        SetCommonButtonBindings( RestartBtn, commonButtonVS );
+        SetButtonCommandBinding( RestartBtn, nameof( GameVM.RestartGameCommand ) );
+        SetCommonButtonBindings( SettingsBtn, commonButtonVS );
+        SetButtonCommandBinding( SettingsBtn, nameof( GameVM.OpenSettingsCommand ) );
+        SetCommonButtonBindings( UndoBtn, commonButtonVS );
+        SetButtonCommandBinding( UndoBtn, nameof( GameVM.UndoLastActionCommand ) );
+
+        PauseBtn.BindingContext = gameVM.VisualState.PauseVS;
+        SetCommonButtonBindings( PauseBtn );
+        SetButtonCommandBinding( PauseBtn, nameof( GameVM.PauseGameCommand ), gameVM );
+
+        PencilBtn.BindingContext = gameVM.VisualState.PencilVS;
+        SetCommonButtonBindings( PencilBtn );
+        SetButtonCommandBinding( PencilBtn, nameof( GameVM.SwitchPenAndPencilCommand ), gameVM );
+
+        EraseBtn.BindingContext = gameVM.VisualState.EraserVS;
+        SetCommonButtonBindings( EraseBtn );
+        SetButtonCommandBinding( EraseBtn, nameof( GameVM.SelectEraserCommand ), gameVM );
+    }
+
+    private void SetCommonButtonBindings( Button button, object? bindingSource = null )
+    {
+        if ( gameVM.VisualState is null ) throw new ApplicationException( "GameVM visual state is not initialized during bindings." );
+
+        if ( bindingSource is null ) {
+            button.SetBinding( Button.TextColorProperty, nameof( CommonButtonVisualState.TextColor ) );
+            button.SetBinding( BackgroundColorProperty, nameof( CommonButtonVisualState.BackgroundColor ) );
+            return;
+        }
+
+        button.SetBinding( Button.TextColorProperty, new Binding( nameof( CommonButtonVisualState.TextColor ), source: bindingSource ) );
+        button.SetBinding( BackgroundColorProperty, new Binding( nameof( CommonButtonVisualState.BackgroundColor ), source: bindingSource ) );
+    }
+
+    private static void SetButtonCommandBinding( Button button, string commandPath, object? source = null )
+    {
+        if ( source is null )
+            button.SetBinding( Button.CommandProperty, commandPath );
+        else
+            button.SetBinding( Button.CommandProperty, new Binding( commandPath, source: source ) );
+    }
+
+    private void GameVM_Victory() => RunVictoryAnimation();
+
+    private void GameVM_NewGameAfterFinishedOne() => RunNewGameAnimation();
 
     private void GamePage_Appearing( object? sender, EventArgs e ) => gameVM.OnPageAppearing();
 
@@ -286,18 +234,5 @@ public partial class GamePage : ContentPage
 
         SettingsFlyout.SetInitialFlyoutPosition();
         PropertyChanged -= GamePage_PropertyChanged;
-    }
-
-    private void SetColumnAndRowNumberPadDefinitions( int gridSize )
-    {
-        ColumnDefinitionCollection columns = new();
-        RowDefinitionCollection rows = new();
-        for ( int i = 0; i < gridSize; i++ ) {
-            columns.Add( new ColumnDefinition( GridLength.Star ) );
-        }
-        rows.Add( new RowDefinition( GridLength.Star ) );
-
-        NumberPad.ColumnDefinitions = columns;
-        NumberPad.RowDefinitions = rows;
     }
 }
