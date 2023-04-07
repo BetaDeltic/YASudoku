@@ -1,10 +1,22 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace YASudoku.ViewModels.GameViewModel;
+namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
 public partial class NumPadButton : ObservableObject
 {
-    public bool IsActive { get; private set; } = false;
+    public bool IsActive
+    {
+        get => _isActive;
+        private set {
+            bool wasActive = _isActive;
+            _isActive = value;
+
+            if ( wasActive != IsActive ) {
+                OnPropertyChanged( nameof( BackgroundColor ) );
+                OnPropertyChanged( nameof( TextColor ) );
+            }
+        }
+    }
 
     public bool IsEnabled => RemainingCount > 0;
 
@@ -37,6 +49,7 @@ public partial class NumPadButton : ObservableObject
     private string number = string.Empty;
 
     private int _remainingCount;
+    private bool _isActive;
 
     private readonly Color activeBackgroundColor;
     private readonly Color inactiveBackgroundColor;
@@ -68,23 +81,9 @@ public partial class NumPadButton : ObservableObject
         this.disabledInactiveTextColor = disabledInactiveTextColor;
     }
 
-    public void SetActive()
-        => ChangeIsActive( true );
+    public void SetActive() => IsActive = true;
 
-    public void SetInactive()
-        => ChangeIsActive( false );
+    public void SetInactive() => IsActive = false;
 
-    public void UpdateRemainingCount( int remainingCount )
-        => RemainingCount = remainingCount;
-
-    private void ChangeIsActive( bool newValue )
-    {
-        bool wasActive = IsActive;
-        IsActive = newValue;
-
-        if ( wasActive != IsActive ) {
-            OnPropertyChanged( nameof( BackgroundColor ) );
-            OnPropertyChanged( nameof( TextColor ) );
-        }
-    }
+    public void UpdateRemainingCount( int remainingCount ) => RemainingCount = remainingCount;
 }
