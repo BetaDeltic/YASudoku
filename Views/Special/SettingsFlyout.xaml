@@ -2,14 +2,11 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:YASudoku.Controls"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     x:Class="YASudoku.Views.Special.SettingsFlyout"
-    x:Name="this"
 >
     <Grid RowDefinitions="Auto,*,Auto" BackgroundColor="Black" x:Name="SettingsPane" >
         <Frame CornerRadius="0" BackgroundColor="Black" >
             <Label
-                    Grid.Column="0"
                     Text="Game settings"
                     TextColor="White"
                     FontSize="25"

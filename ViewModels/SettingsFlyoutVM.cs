@@ -7,7 +7,7 @@ namespace YASudoku.ViewModels;
 public partial class SettingsFlyoutVM : VMsBase
 {
     [ObservableProperty]
-    private bool _isFlyoutVisibleInternal = false;
+    private bool _isFlyoutVisibleInternal;
 
     [ObservableProperty]
     private bool _isHighlightRelatedEnabled = true;
@@ -15,7 +15,7 @@ public partial class SettingsFlyoutVM : VMsBase
     [ObservableProperty]
     private bool _isHighlightMistakesEnabled = true;
 
-    readonly ISettingsService settings;
+    private readonly ISettingsService settings;
 
     public SettingsFlyoutVM( IServiceProvider serviceProvider )
         : base( serviceProvider.GetService<ISettingsService>()! )
