@@ -75,7 +75,7 @@ public static class MauiProgram
         string file = Path.Combine( FileSystem.AppDataDirectory, "logs", "YASudoku.log" );
 
         Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Debug()
+        .MinimumLevel.Warning()
         .MinimumLevel.Override( "Microsoft", LogEventLevel.Warning )
         .Enrich.FromLogContext()
         .WriteTo.File( file, flushToDiskInterval: flushInterval, encoding: System.Text.Encoding.UTF8 )
