@@ -19,11 +19,11 @@ public partial class App : Application
     }
 
     private static void CurrentDomain_FirstChanceException( object? sender, FirstChanceExceptionEventArgs e )
-        => ExceptionLogging.LogException( e );
+        => ExceptionLogging.LogException( e.Exception );
 
     private static void CurrentDomain_UnhandledException( object sender, UnhandledExceptionEventArgs e )
     {
-        ExceptionLogging.LogException( e );
+        ExceptionLogging.LogException( e.ExceptionObject );
 
         Log.CloseAndFlush();
         Environment.Exit( 0 );
