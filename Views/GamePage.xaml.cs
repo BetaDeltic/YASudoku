@@ -19,7 +19,7 @@ public partial class GamePage : ContentPage
 
     public GamePage( GameVM gameVM )
     {
-        if ( gameVM.VisualState is null )
+        if ( gameVM.VisualState == null )
             throw new ApplicationException( $"Attempted to initialize {nameof( GamePage )} while gameVM is not ready." );
 
         InitializeComponent();
@@ -78,7 +78,7 @@ public partial class GamePage : ContentPage
 
     private void InitializeIndividualGridCells()
     {
-        if ( gameVM.VisualState?.GameData is null ) throw new ApplicationException( "Trying to initialize grid cells without game data." );
+        if ( gameVM.VisualState?.GameData == null ) throw new ApplicationException( "Trying to initialize grid cells without game data." );
 
         var lineLength = gridSize switch {
             9 => 3,
@@ -198,9 +198,9 @@ public partial class GamePage : ContentPage
 
     private void SetCommonButtonBindings( Button button, object? bindingSource = null )
     {
-        if ( gameVM.VisualState is null ) throw new ApplicationException( "GameVM visual state is not initialized during bindings." );
+        if ( gameVM.VisualState == null ) throw new ApplicationException( "GameVM visual state is not initialized during bindings." );
 
-        if ( bindingSource is null ) {
+        if ( bindingSource == null ) {
             button.SetBinding( Button.TextColorProperty, nameof( CommonButtonVisualState.TextColor ) );
             button.SetBinding( BackgroundColorProperty, nameof( CommonButtonVisualState.BackgroundColor ) );
             return;
@@ -212,7 +212,7 @@ public partial class GamePage : ContentPage
 
     private static void SetButtonCommandBinding( Button button, string commandPath, object? source = null )
     {
-        if ( source is null )
+        if ( source == null )
             button.SetBinding( Button.CommandProperty, commandPath );
         else
             button.SetBinding( Button.CommandProperty, new Binding( commandPath, source: source ) );
