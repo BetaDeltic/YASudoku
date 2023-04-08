@@ -1,22 +1,33 @@
 ﻿using System.ComponentModel;
-using YASudoku.Controls.ControlBindings;
 using YASudoku.Common;
+using YASudoku.Controls.ControlBindings;
+using YASudoku.Services.JournalingServices;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
 public class GameGridCellVisualData : INotifyPropertyChanged
 {
+    public event Action<bool>? HighlightChanged;
+    public event Action<int>? ValueFilled;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public readonly int CellID;
 
-    public bool IsLockedForChanges { get; private set; }
+    public bool IsLockedForChanges
+    {
+        get => _isLocked;
+        private set {
+            _isLocked = value;
+            Notify( nameof( FontAttribute ) );
+            Notify( nameof( TextColor ) );
+        }
+    }
 
     public int UserFacingValue
     {
         get => _userFacingValue;
-        set {
+        private set {
             _userFacingValue = value;
             Notify( nameof( UserFacingValue ) );
             Notify( nameof( UserFacingText ) );
@@ -67,21 +78,23 @@ public class GameGridCellVisualData : INotifyPropertyChanged
 
     public bool IsShowingValue { get; private set; } = true;
     public bool IsShowingCandidates => !IsShowingValue;
-    public List<LabelOrNumberedGridBinding> CandidatesGridProperties { get; private set; }
+    public List<LabelOrNumberedGridBinding> CandidatesGridProperties { get; }
 
     public bool HasCorrectValue => UserFacingValue == CorrectValue;
     public bool HasUserFacingValue => UserFacingValue != 0;
 
     private readonly int initCandidatesCount;
-    internal readonly List<GameGridCellVisualData> relatedCells = new();
 
     private readonly ISettingsService settings;
+    private readonly IPlayerJournalingService journal;
 
     private int _userFacingValue;
     private bool _isHighlightedAsSelected;
     private bool _isHighlightedAsRelated;
-    private int highlightedCandidate;
     private bool _isHidingAllValues;
+    private bool _isLocked;
+
+    private int highlightedCandidate;
 
     private readonly Color lockedColor = Colors.White;
     private readonly Color incorrectColor = Colors.Red;
@@ -90,8 +103,10 @@ public class GameGridCellVisualData : INotifyPropertyChanged
     private readonly Color highlightedAsRelatedColor = Colors.DarkMagenta;
     private readonly Color regularColor = Color.FromUint( 0xFF2F2F2F );
 
-    public GameGridCellVisualData( ISettingsService settingsService, int candidatesCount, int id, bool isLocked, int value, int correctValue )
+    public GameGridCellVisualData( ISettingsService settingsService, IPlayerJournalingService journalingService,
+        int candidatesCount, int id, bool isLocked, int value, int correctValue )
     {
+        journal = journalingService;
         settings = settingsService;
         settings.MistakesHighlightingChanged += Settings_MistakesHighlightingChanged;
 
@@ -119,57 +134,56 @@ public class GameGridCellVisualData : INotifyPropertyChanged
     private void Notify( string propertyName )
         => PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
 
-    public void HighlightCellAsSelected()
-    {
-        IsHighlightedAsSelectedInternal = true;
-        IsHighlightedAsRelatedInternal = false;
-        Notify( nameof( BackgroundColor ) );
-        SetCandidatesBackgroundToCellBackground();
-    }
+    public void AddCandidate( int candidateNumber, bool addToJournal = true )
+        => ChangeCandidateVisibility( candidateNumber, setAsVisible: true, addToJournal );
 
-    public void HighlightCellAsRelated()
+    private void ChangeCandidateVisibility( int candidateNumber, bool setAsVisible, bool addToJournal = true )
     {
-        IsHighlightedAsSelectedInternal = false;
-        IsHighlightedAsRelatedInternal = true;
-        Notify( nameof( BackgroundColor ) );
-        SetCandidatesBackgroundToCellBackground();
-    }
+        if ( HasUserFacingValue ||
+            ( HasNumberAsCandidate( candidateNumber ) && setAsVisible ) ||
+            ( !HasNumberAsCandidate( candidateNumber ) && !setAsVisible ) ) {
+            return;
+        }
 
-    private void SetCandidatesBackgroundToCellBackground()
-        => CandidatesGridProperties.ForEach( candidate => candidate.BackgroundColor = BackgroundColor );
+        GetCandidatePropertiesByNumber( candidateNumber ).Text =
+            setAsVisible ? candidateNumber.ToString() : string.Empty;
 
-    public void HighlightCellAndRelatedCells()
-    {
-        HighlightCellAsSelected();
-        relatedCells.ForEach( relatedCell => relatedCell.HighlightCellAsRelated() );
+        if ( !addToJournal ) return;
+        PlayerTransactionTypes transactionType =
+            setAsVisible ? PlayerTransactionTypes.CandidateAdded : PlayerTransactionTypes.CandidateRemoved;
+        journal.AddTransaction( transactionType, this, candidateNumber );
     }
 
     public void HighlightCandidate( int candidateNumber )
     {
-        if ( HasUserFacingValue || candidateNumber == 0 || candidateNumber > initCandidatesCount )
-            return;
+        if ( HasUserFacingValue || candidateNumber == 0 || candidateNumber > initCandidatesCount ) return;
 
         GetCandidatePropertiesByNumber( candidateNumber ).BackgroundColor = highlightedAsSelectedColor;
 
         highlightedCandidate = candidateNumber;
     }
 
-    public void UnhighlightCell()
+    public void HighlightCellAsSelected()
     {
-        IsHighlightedAsSelectedInternal = false;
+        IsHighlightedAsSelectedInternal = true;
         IsHighlightedAsRelatedInternal = false;
-        Notify( nameof( BackgroundColor ) );
         SetCandidatesBackgroundToCellBackground();
     }
 
-    public void UnhighlightCandidate()
+    private void SetCandidatesBackgroundToCellBackground()
+        => CandidatesGridProperties.ForEach( candidate => candidate.BackgroundColor = BackgroundColor );
+
+    public void HighlightCellAsRelated()
     {
-        if ( HasUserFacingValue || highlightedCandidate == 0 )
-            return;
+        IsHighlightedAsSelectedInternal = false;
+        IsHighlightedAsRelatedInternal = true;
+        SetCandidatesBackgroundToCellBackground();
+    }
 
-        GetCandidatePropertiesByNumber( highlightedCandidate ).BackgroundColor = regularColor;
-
-        highlightedCandidate = 0;
+    public void HighlightCellAndNotifyRelated()
+    {
+        HighlightCellAsSelected();
+        HighlightChanged?.Invoke( true );
     }
 
     private LabelOrNumberedGridBinding GetCandidatePropertiesByNumber( int candidateNumber )
@@ -179,14 +193,16 @@ public class GameGridCellVisualData : INotifyPropertyChanged
             : CandidatesGridProperties[ candidateNumber - 1 ];
     }
 
-    public void UnhighlightCellAndRelatedCells()
+    public void UnhighlightCellAndNotifyRelated()
     {
         UnhighlightCell();
-        relatedCells.ForEach( relatedCell => relatedCell.UnhighlightCell() );
+        HighlightChanged?.Invoke( false );
     }
 
-    public void ShowValue()
+    public void DisplayValue()
     {
+        if ( IsShowingValue ) return;
+
         IsShowingValue = true;
 
         CandidatesGridProperties.ForEach( x => x.IsVisible = false );
@@ -195,10 +211,9 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         Notify( nameof( IsShowingCandidates ) );
     }
 
-    public void ShowCandidates()
+    public void DisplayCandidates()
     {
-        if ( HasUserFacingValue )
-            return;
+        if ( HasUserFacingValue || IsShowingCandidates ) return;
 
         IsShowingValue = false;
 
@@ -208,58 +223,15 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         Notify( nameof( IsShowingCandidates ) );
     }
 
-    public void HideAllCandidates()
-        => CandidatesGridProperties.ForEach( candidate => candidate.Text = string.Empty );
-
     public IEnumerable<int> GetAllCandidateValues() =>
         CandidatesGridProperties
         .Where( candidate => candidate.Text != string.Empty )
         .Select( candidate => int.Parse( candidate.Text ) );
 
-    public void ChangeCandidateVisibility( int candidateNumber, bool setAsVisible )
-    {
-        if ( HasUserFacingValue )
-            return;
-
-        GetCandidatePropertiesByNumber( candidateNumber ).Text =
-            setAsVisible ? candidateNumber.ToString() : string.Empty;
-    }
-
-    public void MakeCandidateInvisibleInRelatedCells( int candidateNumber, out IEnumerable<GameGridCellVisualData> affectedCells )
-    {
-        if ( candidateNumber == 0 ) {
-            affectedCells = Enumerable.Empty<GameGridCellVisualData>();
-            return;
-        }
-
-        affectedCells = relatedCells.Where( relatedCell => relatedCell.HasNumberAsCandidate( candidateNumber ) ).ToList();
-        affectedCells.ForEach( cell => cell.ChangeCandidateVisibility( candidateNumber, false ) );
-    }
-
     public bool HasNumberAsCandidate( int candidateNumber )
         => GetCandidatePropertiesByNumber( candidateNumber ).Text != string.Empty;
 
-    public void ResetCellData( bool isLocked, int userFacingValue, int correctValue )
-    {
-        IsLockedForChanges = isLocked;
-        UserFacingValue = userFacingValue;
-        CorrectValue = correctValue;
-
-        UnhighlightCell();
-        IsShowingValue = true;
-
-        ResetGridProperties();
-    }
-
-    public void RestartValue()
-    {
-        if ( IsLockedForChanges )
-            return;
-
-        UserFacingValue = 0;
-    }
-
-    public void SetTextColorToTransparent()
+    public void HideAllValues()
     {
         CandidatesGridProperties.ForEach( candidate => {
             candidate.TextColor = Colors.Transparent;
@@ -268,13 +240,39 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         IsHidingAllValues = true;
     }
 
-    public void SetTextColorToRegular()
-    {
-        CandidatesGridProperties.ForEach( candidate => {
-            candidate.TextColor = Colors.White;
-        } );
+    public void RemoveAllCandidates()
+        => GetAllCandidateValues().ForEach( candidate => RemoveCandidate( candidate ) );
 
-        IsHidingAllValues = false;
+    public void RemoveCandidate( int candidateNumber, bool addToJournal = true )
+        => ChangeCandidateVisibility( candidateNumber, setAsVisible: false, addToJournal );
+
+    public void RelatedCell_HighlightChanged( bool isHighlighted )
+    {
+        if ( isHighlighted )
+            HighlightCellAsRelated();
+        else
+            UnhighlightCell();
+    }
+
+    public void RelatedCell_ValueFilled( int value )
+    {
+        if ( !HasNumberAsCandidate( value ) ) return;
+
+        journal.AddTransaction( PlayerTransactionTypes.RelatedCandidateRemoved, this, value );
+
+        RemoveCandidate( value, addToJournal: false );
+    }
+
+    public void ResetCellData( bool isLocked, int userFacingValue, int correctValue )
+    {
+        IsLockedForChanges = isLocked;
+        UserFacingValue = userFacingValue;
+        CorrectValue = correctValue;
+
+        UnhighlightCell();
+        DisplayValue();
+
+        ResetGridProperties();
     }
 
     private void ResetGridProperties()
@@ -286,5 +284,54 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         } );
 
         highlightedCandidate = 0;
+    }
+
+    public void RestartValue()
+    {
+        if ( IsLockedForChanges ) return;
+
+        UserFacingValue = 0;
+    }
+
+    public void RevealValues()
+    {
+        CandidatesGridProperties.ForEach( candidate => {
+            candidate.TextColor = Colors.White;
+        } );
+
+        IsHidingAllValues = false;
+    }
+
+    public void SetUserFacingValueAndNotifyRelatedCells( int newValue, bool addToJournal )
+    {
+        if ( UserFacingValue == newValue ) return;
+
+        if ( addToJournal ) {
+            PlayerTransactionTypes transactionType = newValue == 0
+            ? PlayerTransactionTypes.CellValueErased : HasUserFacingValue
+            ? PlayerTransactionTypes.CellValueChanged : PlayerTransactionTypes.CellValueAdded;
+
+            journal.AddTransaction( transactionType, this, UserFacingValue );
+        }
+
+        if ( newValue != 0 ) ValueFilled?.Invoke( newValue );
+
+        UserFacingValue = newValue;
+    }
+
+    public void UnhighlightCandidate()
+    {
+        if ( HasUserFacingValue || highlightedCandidate == 0 ) return;
+
+        GetCandidatePropertiesByNumber( highlightedCandidate ).BackgroundColor = regularColor;
+
+        highlightedCandidate = 0;
+    }
+
+    public void UnhighlightCell()
+    {
+        IsHighlightedAsSelectedInternal = false;
+        IsHighlightedAsRelatedInternal = false;
+        SetCandidatesBackgroundToCellBackground();
     }
 }

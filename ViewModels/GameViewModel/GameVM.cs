@@ -15,8 +15,7 @@ public partial class GameVM : VMsBase, IDisposable
     public readonly int gridSize = 9;
 
     private readonly IPuzzleGenerator generator;
-    private readonly ISettingsService settings;
-    private readonly IPlayerJournalingService journalingService;
+    private readonly IPlayerJournalingService journal;
     public readonly IServiceProvider serviceProvider;
 
     public VisualStatesHandler? VisualState { get; private set; }
@@ -26,12 +25,12 @@ public partial class GameVM : VMsBase, IDisposable
     private SelectEraserCmd? selectEraserCmd;
     private SelectCellCmd? selectCellCmd;
 
-    public GameVM( IPuzzleGenerator puzzleGenerator, ISettingsService settingsService, IServiceProvider serviceProvider, IPlayerJournalingService journalingService )
+    public GameVM( IPuzzleGenerator puzzleGenerator, ISettingsService settingsService, IServiceProvider serviceProvider,
+        IPlayerJournalingService journalingService )
         : base( settingsService )
     {
-        settings = settingsService;
         this.serviceProvider = serviceProvider;
-        this.journalingService = journalingService;
+        journal = journalingService;
         generator = puzzleGenerator;
     }
 
@@ -113,21 +112,21 @@ public partial class GameVM : VMsBase, IDisposable
     }
 
     [RelayCommand]
-    public void UndoLastAction() => journalingService.ReverseTransaction();
+    public void UndoLastAction() => journal.ReverseTransaction();
 
     public void PrepareGameView( bool generateNew )
     {
         GameDataContainer gameData = GetPuzzleData( generateNew );
-        GameGridVisualDataCollection visualData = new( gameData.AllCells, gridSize, settings );
+        GameGridVisualDataCollection visualData = new( gameData.AllCells, gridSize, serviceProvider );
 
         VisualState = new( gridSize, visualData, serviceProvider );
-        
-        journalingService.SetVisualState( VisualState );
+
+        journal.SetVisualState( VisualState );
 
         switchPenAndPencilCmd = new( VisualState.PencilVS );
-        pressNumberCmd = new( VisualState, journalingService );
-        selectCellCmd = new( VisualState, journalingService );
-        selectEraserCmd = new( VisualState, journalingService );
+        pressNumberCmd = new( VisualState );
+        selectCellCmd = new( VisualState );
+        selectEraserCmd = new( VisualState );
 
         VisualState.UpdateAllButtonRemainingCounts();
     }
@@ -160,7 +159,7 @@ public partial class GameVM : VMsBase, IDisposable
         if ( VisualState.IsPencilActive )
             VisualState.PencilVS.DeactivateButton();
 
-        journalingService.ClearJournal();
+        journal.ClearJournal();
     }
 
     private void PrepareUIForNewGame()

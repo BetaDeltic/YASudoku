@@ -4,15 +4,13 @@ using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public partial class SelectEraserCmd
+public class SelectEraserCmd
 {
     private readonly VisualStatesHandler visualState;
-    private readonly IPlayerJournalingService journalingService;
 
-    public SelectEraserCmd( VisualStatesHandler visualState, IPlayerJournalingService journalingService )
+    public SelectEraserCmd( VisualStatesHandler visualState )
     {
         this.visualState = visualState;
-        this.journalingService = journalingService;
     }
 
     public void SelectEraser()
@@ -41,21 +39,12 @@ public partial class SelectEraserCmd
 
         // User is trying to delete cell candidates
         if ( !visualState.SelectedCell!.HasUserFacingValue ) {
-            IEnumerable<int> cellCandidates = visualState.SelectedCell.GetAllCandidateValues();
-            cellCandidates.ForEach( candidate =>
-                journalingService
-                .AddTransaction( PlayerTransactionTypes.CandidateRemoved, visualState.SelectedCell, candidate )
-            );
-
-            visualState.SelectedCell.HideAllCandidates();
+            visualState.SelectedCell.RemoveAllCandidates();
             visualState.GameGridVS.DeselectCell();
             return;
         }
 
         // User is trying to delete value from selected cell
-        journalingService.AddTransaction(
-            PlayerTransactionTypes.CellValueErased, visualState.SelectedCell, visualState.SelectedCell.UserFacingValue
-        );
         visualState.GameGridVS.RemoveValueFromSelectedCell();
         visualState.GameGridVS.HighlightSelectedCell();
     }

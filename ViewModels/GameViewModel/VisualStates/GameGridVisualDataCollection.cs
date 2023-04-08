@@ -1,54 +1,70 @@
 ﻿using YASudoku.Models;
+using YASudoku.Services.JournalingServices;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
 public class GameGridVisualDataCollection
 {
-    public int Count => cells.Count;
-    public GameGridCellVisualData this[ int index ] => cells[ index ];
+    public int Count => visualCells.Count;
+    public GameGridCellVisualData this[ int index ] => visualCells[ index ];
 
-    private readonly List<GameGridCellVisualData> cells;
+    private readonly IServiceProvider serviceProvider;
 
-    private readonly ISettingsService settings;
+    private readonly List<GameGridCellVisualData> visualCells;
 
-    public GameGridVisualDataCollection( GameGridCollection allCells, int gridSize, ISettingsService settings )
+    public GameGridVisualDataCollection( GameGridCollection generatedCellData, int gridSize,
+        IServiceProvider serviceProvider )
     {
-        if ( allCells.Count == 0 ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with empty collection" );
+        this.serviceProvider = serviceProvider;
+
+        if ( generatedCellData.Count == 0 ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with empty collection" );
 
         int expectedCount = gridSize * gridSize;
-        if ( allCells.Count != expectedCount ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with {allCells.Count} amount of cells, expected {expectedCount}." );
+        if ( generatedCellData.Count != expectedCount ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with {generatedCellData.Count} amount of cells, expected {expectedCount}." );
 
-        this.settings = settings;
+        visualCells = new( generatedCellData.Count );
 
-        cells = new( allCells.Count );
-
-        InitializeCellData( allCells, gridSize );
+        InitializeCellData( generatedCellData, gridSize );
     }
 
-    private void InitializeCellData( GameGridCollection allCells, int candidateCount )
-        => allCells.ForEach( cell => cells.Add( new( settings, candidateCount, cell.CellID, cell.IsLockedForChanges,
-            cell.UserFacingValue, cell.CorrectValue ) ) );
+    private void InitializeCellData( GameGridCollection generatedCellData, int candidateCount )
+    {
+        ISettingsService settings = serviceProvider.GetRequiredService<ISettingsService>();
+        IPlayerJournalingService journal = serviceProvider.GetRequiredService<IPlayerJournalingService>();
 
-    public void ForEach( Action<GameGridCellVisualData> action ) => cells.ForEach( action );
+        generatedCellData.ForEach( generatedCell => {
+            visualCells.Add( new( settings, journal, candidateCount, generatedCell.CellID, generatedCell.IsLockedForChanges,
+                generatedCell.UserFacingValue, generatedCell.CorrectValue ) );
+        } );
 
-    public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func ) => cells.Where( func );
+        generatedCellData.ForEach( generatedCell => {
+            generatedCell.relatedCells.ForEach( relatedCell => {
+                visualCells[ generatedCell.CellID ].HighlightChanged += visualCells[ relatedCell.CellID ].RelatedCell_HighlightChanged;
+                visualCells[ generatedCell.CellID ].ValueFilled += visualCells[ relatedCell.CellID ].RelatedCell_ValueFilled;
+            } );
+        } );
+    }
+
+    public void ForEach( Action<GameGridCellVisualData> action ) => visualCells.ForEach( action );
+
+    public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func ) => visualCells.Where( func );
 
     public void ReplaceCollection( GameGridCollection newCells )
     {
-        if ( newCells.Count != cells.Count ) return;
+        if ( newCells.Count != visualCells.Count ) return;
 
         newCells.ForEach( newCell => {
-            var matchingCell = cells.First( oldCell => oldCell.CellID == newCell.CellID );
+            GameGridCellVisualData matchingCell = visualCells[ newCell.CellID ];
             matchingCell.ResetCellData( newCell.IsLockedForChanges, newCell.UserFacingValue, newCell.CorrectValue );
         } );
     }
 
     public void RestartCellValues()
     {
-        cells.ForEach( cell => {
+        visualCells.ForEach( cell => {
             cell.RestartValue();
-            cell.HideAllCandidates();
+            cell.RemoveAllCandidates();
         } );
     }
 }

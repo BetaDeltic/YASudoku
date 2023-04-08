@@ -1,6 +1,4 @@
-﻿using YASudoku.Common;
-using YASudoku.Services.JournalingServices;
-using YASudoku.ViewModels.GameViewModel.VisualStates;
+﻿using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
@@ -11,21 +9,19 @@ public class SelectCellCmd
     private readonly NumPadVisualState numPad;
     private readonly GameGridVisualState grid;
     private readonly VisualStatesHandler visualState;
-    private readonly IPlayerJournalingService journalingService;
 
     private NumPadButton? SelectedNumber => numPad.SelectedButton;
     private GameGridCellVisualData? SelectedCell => grid.SelectedCell;
 
     private int SelectedButtonNumber => numPad.SelectedButtonNumber;
 
-    public SelectCellCmd( VisualStatesHandler visualState, IPlayerJournalingService journalingService )
+    public SelectCellCmd( VisualStatesHandler visualState )
     {
         pencil = visualState.PencilVS;
         eraser = visualState.EraserVS;
         numPad = visualState.NumPadVS;
         grid = visualState.GameGridVS;
         this.visualState = visualState;
-        this.journalingService = journalingService;
     }
 
     public void SelectCell( int newSelectedCellIndex )
@@ -74,9 +70,8 @@ public class SelectCellCmd
 
         // User is erasing current cell value using same button
         if ( SelectedCell.UserFacingValue == SelectedButtonNumber ) {
-            journalingService.AddTransaction( PlayerTransactionTypes.CellValueErased, SelectedCell, SelectedButtonNumber );
             grid.RemoveValueFromSelectedCell();
-            SelectedCell.ShowCandidates();
+            SelectedCell.DisplayCandidates();
             grid.DeselectCell();
             grid.HighlightCellsWithSameNumber( SelectedButtonNumber );
             return;
@@ -91,16 +86,7 @@ public class SelectCellCmd
         }
 
         // User wants to change selected cell to selected number
-        if ( SelectedCell.HasUserFacingValue ) {
-            journalingService.AddTransaction( PlayerTransactionTypes.CellValueChanged, SelectedCell, SelectedCell.UserFacingValue );
-        } else {
-            journalingService.AddTransaction( PlayerTransactionTypes.CellValueAdded, SelectedCell, SelectedButtonNumber );
-        }
-
-        grid.ChangeSelectedCellValueAndNotify( SelectedButtonNumber, out var affectedCells );
-        affectedCells.ForEach( cell =>
-            journalingService.AddTransaction( PlayerTransactionTypes.RelatedCandidateRemoved, cell, SelectedButtonNumber )
-        );
+        grid.ChangeSelectedCellValueAndNotify( SelectedButtonNumber );
 
         grid.DeselectCell();
         grid.HighlightCellsWithSameNumber( SelectedButtonNumber );
@@ -113,17 +99,15 @@ public class SelectCellCmd
 
         // User wants to remove value from candidates
         if ( SelectedCell.HasNumberAsCandidate( SelectedButtonNumber ) ) {
-            journalingService.AddTransaction( PlayerTransactionTypes.CandidateRemoved, SelectedCell, SelectedButtonNumber );
-            SelectedCell.ChangeCandidateVisibility( SelectedButtonNumber, false );
+            SelectedCell.RemoveCandidate( SelectedButtonNumber );
             grid.DeselectCell();
             grid.HighlightCellsWithSameNumber( SelectedButtonNumber );
             return;
         }
 
         // User wants to add selected number to selected cell candidates
-        journalingService.AddTransaction( PlayerTransactionTypes.CandidateAdded, SelectedCell, SelectedButtonNumber );
-        SelectedCell.ChangeCandidateVisibility( SelectedButtonNumber, true );
-        SelectedCell.ShowCandidates();
+        SelectedCell.AddCandidate( SelectedButtonNumber );
+        SelectedCell.DisplayCandidates();
         grid.DeselectCell();
         grid.HighlightCellsWithSameNumber( SelectedButtonNumber );
     }
@@ -133,19 +117,12 @@ public class SelectCellCmd
         grid.SelectNewCell( newSelectedCellIndex );
         // User is erasing all the candidates
         if ( !SelectedCell!.HasUserFacingValue ) {
-            IEnumerable<int> cellCandidates = SelectedCell.GetAllCandidateValues();
-            cellCandidates.ForEach( candidate =>
-                journalingService
-                .AddTransaction( PlayerTransactionTypes.CandidateRemoved, SelectedCell, candidate )
-            );
-
-            SelectedCell.HideAllCandidates();
+            SelectedCell.RemoveAllCandidates();
             grid.DeselectCell();
             return;
         }
 
         // User is erasing cell value
-        journalingService.AddTransaction( PlayerTransactionTypes.CellValueErased, SelectedCell, SelectedCell.UserFacingValue );
         grid.RemoveValueFromSelectedCell();
         grid.DeselectCell();
     }

@@ -54,7 +54,7 @@ public class GameGridVisualState
     {
         if ( SelectedCell == null ) return;
 
-        SelectedCell.UnhighlightCellAndRelatedCells();
+        SelectedCell.UnhighlightCellAndNotifyRelated();
         SelectedCell = null;
     }
 
@@ -62,7 +62,7 @@ public class GameGridVisualState
     {
         if ( SelectedCell == null ) return;
 
-        if ( settings.CanHighlightRelatedCells() ) SelectedCell.HighlightCellAndRelatedCells();
+        if ( settings.CanHighlightRelatedCells() ) SelectedCell.HighlightCellAndNotifyRelated();
         else SelectedCell.HighlightCellAsSelected();
     }
 
@@ -99,41 +99,38 @@ public class GameGridVisualState
         highlightedNumber = 0;
     }
 
-    public void RemoveValueFromSelectedCell()
+    public void RemoveValueFromSelectedCell( bool addToJournal = true )
     {
         if ( SelectedCell == null ) {
             return;
         }
 
-        ChangeSelectedCellValueAndNotify( 0, out _ );
+        ChangeSelectedCellValueAndNotify( 0, addToJournal );
         UnhighlightCellsWithSameNumber();
     }
 
-    public void ChangeSelectedCellValueAndNotify( int newValue, out IEnumerable<GameGridCellVisualData> affectedCells )
+    public void ChangeSelectedCellValueAndNotify( int newValue, bool addToJournal = true )
     {
-        affectedCells = Enumerable.Empty<GameGridCellVisualData>();
         if ( SelectedCell == null || SelectedCell.IsLockedForChanges ) {
             return;
         }
 
         int previousValue = SelectedCell.UserFacingValue;
-        SelectedCell.UserFacingValue = newValue;
+        SelectedCell.SetUserFacingValueAndNotifyRelatedCells( newValue, addToJournal );
 
         if ( newValue == 0 ) {
-            SelectedCell.ShowCandidates();
+            SelectedCell.DisplayCandidates();
         } else {
-            SelectedCell.ShowValue();
+            SelectedCell.DisplayValue();
             NumberCountChanged?.Invoke( newValue, SelectedCell );
-
-            SelectedCell.MakeCandidateInvisibleInRelatedCells( newValue, out affectedCells );
         }
 
         if ( previousValue != 0 ) NumberCountChanged?.Invoke( previousValue, SelectedCell );
     }
 
-    public void HideAllCellValues() => allCells?.ForEach( cell => cell.SetTextColorToTransparent() );
+    public void HideAllCellValues() => allCells?.ForEach( cell => cell.HideAllValues() );
 
-    public void ShowAllCellValues() => allCells?.ForEach( cell => cell.SetTextColorToRegular() );
+    public void ShowAllCellValues() => allCells?.ForEach( cell => cell.RevealValues() );
 
     public IEnumerable<GameGridCellVisualData> GetCellsWithSameNumber( int number )
         => allCells == null ? Enumerable.Empty<GameGridCellVisualData>() : allCells.Where( cell => cell.UserFacingValue == number );
