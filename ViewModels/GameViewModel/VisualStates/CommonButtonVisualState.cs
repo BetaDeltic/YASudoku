@@ -3,38 +3,16 @@ using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
-public class CommonButtonVisualState : ObservableObject
+public partial class CommonButtonVisualState : ObservableObject
 {
-    public Color BackgroundColor
-    {
-        get => _backgroundColor;
-        private set {
-            _backgroundColor = value;
-            OnPropertyChanged( nameof( BackgroundColor ) );
-        }
-    }
+    [ObservableProperty]
+    public Color backgroundColor = Colors.Transparent;
 
-    public Color TextColor
-    {
-        get => _color;
-        private set {
-            _color = value;
-            OnPropertyChanged( nameof( TextColor ) );
-        }
-    }
+    [ObservableProperty]
+    public Color textColor = Colors.Transparent;
 
-    public bool IsActive
-    {
-        get => _isActive;
-        private set {
-            _isActive = value;
-            OnPropertyChanged( nameof( IsActive ) );
-        }
-    }
-
-    private bool _isActive;
-    private Color _backgroundColor = Colors.Transparent;
-    private Color _color = Colors.Transparent;
+    [ObservableProperty]
+    public bool isActive;
 
     private readonly Color foregroundColor;
     private readonly Color accentColor;
@@ -43,11 +21,15 @@ public class CommonButtonVisualState : ObservableObject
     {
         foregroundColor = SettingsService.ForegroundColor;
         accentColor = settings.GetAccentColor();
-        DeactivateButton();
+
+        TextColor = foregroundColor;
+        BackgroundColor = accentColor;
     }
 
     public void DeactivateButton()
     {
+        if ( !IsActive ) return;
+
         IsActive = false;
         TextColor = foregroundColor;
         BackgroundColor = accentColor;
@@ -55,6 +37,8 @@ public class CommonButtonVisualState : ObservableObject
 
     public void ActivateButton()
     {
+        if ( IsActive ) return;
+
         IsActive = true;
         TextColor = accentColor;
         BackgroundColor = foregroundColor;
