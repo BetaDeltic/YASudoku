@@ -51,7 +51,7 @@ public partial class VisualStatesHandler : ObservableObject, IDisposable
 
     private System.Timers.Timer? timer;
 
-    private int totalElapsedTime = 0;
+    private int totalElapsedTime;
 
     public VisualStatesHandler( int gridSize, GameGridVisualDataCollection gameData, IServiceProvider serviceProvider )
     {
@@ -122,7 +122,7 @@ public partial class VisualStatesHandler : ObservableObject, IDisposable
 
     public void UpdateAllButtonRemainingCounts()
         => Enumerable.Range( 1, gridSize )
-        .ForEach( number => UpdateButtonRemainingCount( number ) );
+        .ForEach( UpdateButtonRemainingCount );
 
     public void UpdateButtonRemainingCount( int buttonNumber )
     {
