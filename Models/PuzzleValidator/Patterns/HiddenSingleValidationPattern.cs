@@ -23,8 +23,15 @@ public class HiddenSingleValidationPattern : IValidatorPattern
             .Where( keyValuePair => keyValuePair.Value == 1 )
             .Select( keyValuePair => keyValuePair.Key );
 
-        return singleCandidates
-            .Select( collection.GetCellsWithSpecificCandidate )
-            .All( cellsWithCandidate => cellsWithCandidate.Count <= 1 );
+        int singleCandidatesCount = 0;
+        int cellsWithSingleCandidatesCount = singleCandidates
+            .SelectMany( candidate => {
+                singleCandidatesCount++;
+                return collection.GetCellsWithSpecificCandidate( candidate );
+            } )
+            .GroupBy( cell => cell.CellID )
+            .Count();
+
+        return singleCandidatesCount <= cellsWithSingleCandidatesCount;
     }
 }
