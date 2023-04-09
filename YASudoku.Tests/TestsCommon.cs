@@ -10,7 +10,7 @@ public class TestsCommon
 {
     public static GameDataContainer CreateGameDataWithSpecificSequence( IEnumerable<int> sequence )
     {
-        GameDataContainer gameData = new( 9, GetJournalMock(), GetSettingsMock() );
+        GameDataContainer gameData = new( 9, GetGeneratorJournalMock() );
         gameData.InitializeCellCollections();
 
         InitializeCollectionWithSpecificSequence( gameData.AllCells, sequence );
@@ -38,7 +38,7 @@ public class TestsCommon
 
     public static GameDataContainer CreateValidContainerWithEmptyCells()
     {
-        GameDataContainer gameData = new( 9, GetJournalMock(), GetSettingsMock() );
+        GameDataContainer gameData = new( 9, GetGeneratorJournalMock() );
         gameData.InitializeCellCollections();
         return gameData;
     }
@@ -204,7 +204,7 @@ public class TestsCommon
         return gameData;
     }
 
-    public static IGeneratorJournalingService GetJournalMock()
+    public static IGeneratorJournalingService GetGeneratorJournalMock()
     {
         var mock = new Mock<IGeneratorJournalingService>();
         mock.Setup( x =>
@@ -221,14 +221,14 @@ public class TestsCommon
         mock.Setup( x => x.GetAccentColor() ).Returns( Colors.DarkMagenta );
         mock.Setup( x => x.SetHighlightingMistakes( It.IsAny<bool>() ) );
         mock.Setup( x => x.SetHighlightingRelatedCells( It.IsAny<bool>() ) );
-        mock.Setup( x => x.CanHighlightMistakes() ).Returns(true);
+        mock.Setup( x => x.CanHighlightMistakes() ).Returns( true );
         mock.Setup( x => x.CanHighlightRelatedCells() ).Returns( true );
 
         return mock.Object;
     }
 
     private static int CountZeroesInSequence( IEnumerable<int> sequence )
-        => sequence.Where( number => number == 0 ).Count();
+        => sequence.Count( number => number == 0 );
 
     private static int GetTotalOfNegativeNumbersInSequence( IEnumerable<int> sequence )
         => -sequence.Where( number => number < 0 ).Sum();
