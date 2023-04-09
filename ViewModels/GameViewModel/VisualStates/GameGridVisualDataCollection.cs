@@ -40,8 +40,7 @@ public class GameGridVisualDataCollection
 
         generatedCellData.ForEach( generatedCell => {
             generatedCell.relatedCells.ForEach( relatedCell => {
-                visualCells[ generatedCell.CellID ].HighlightChanged += visualCells[ relatedCell.CellID ].RelatedCell_HighlightChanged;
-                visualCells[ generatedCell.CellID ].ValueFilled += visualCells[ relatedCell.CellID ].RelatedCell_ValueFilled;
+                visualCells[ generatedCell.CellID ].AddRelatedCell( visualCells[ relatedCell.CellID ] );
             } );
         } );
     }

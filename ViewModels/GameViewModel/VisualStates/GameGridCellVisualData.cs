@@ -73,6 +73,8 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         }
     }
 
+    internal readonly List<GameGridCellVisualData> relatedCells = new();
+
     public FontAttributes FontAttribute => IsLockedForChanges ? FontAttributes.Bold : FontAttributes.None;
     public int CorrectValue { get; private set; }
 
@@ -136,6 +138,30 @@ public class GameGridCellVisualData : INotifyPropertyChanged
 
     public void AddCandidate( int candidateNumber, bool addToJournal = true )
         => ChangeCandidateVisibility( candidateNumber, setAsVisible: true, addToJournal );
+
+    public void AddRelatedCell( GameGridCellVisualData relatedCell )
+    {
+        relatedCells.Add( relatedCell );
+        relatedCell.HighlightChanged += RelatedCell_HighlightChanged;
+        relatedCell.ValueFilled += RelatedCell_ValueFilled;
+    }
+
+    private void RelatedCell_HighlightChanged( bool isHighlighted )
+    {
+        if ( isHighlighted )
+            HighlightCellAsRelated();
+        else
+            UnhighlightCell();
+    }
+
+    private void RelatedCell_ValueFilled( int value )
+    {
+        if ( !HasNumberAsCandidate( value ) ) return;
+
+        journal.AddTransaction( PlayerTransactionTypes.RelatedCandidateRemoved, this, value );
+
+        RemoveCandidate( value, addToJournal: false );
+    }
 
     private void ChangeCandidateVisibility( int candidateNumber, bool setAsVisible, bool addToJournal = true )
     {
@@ -245,23 +271,6 @@ public class GameGridCellVisualData : INotifyPropertyChanged
 
     public void RemoveCandidate( int candidateNumber, bool addToJournal = true )
         => ChangeCandidateVisibility( candidateNumber, setAsVisible: false, addToJournal );
-
-    public void RelatedCell_HighlightChanged( bool isHighlighted )
-    {
-        if ( isHighlighted )
-            HighlightCellAsRelated();
-        else
-            UnhighlightCell();
-    }
-
-    public void RelatedCell_ValueFilled( int value )
-    {
-        if ( !HasNumberAsCandidate( value ) ) return;
-
-        journal.AddTransaction( PlayerTransactionTypes.RelatedCandidateRemoved, this, value );
-
-        RemoveCandidate( value, addToJournal: false );
-    }
 
     public void ResetCellData( bool isLocked, int userFacingValue, int correctValue )
     {
