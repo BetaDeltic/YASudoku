@@ -46,13 +46,7 @@ public class GameGridCollection
     }
 
     public IEnumerable<GameGridCell> GetCellsWithNoValue()
-        => GetUninitiatedCells().Any() ? GetUninitiatedCells() : GetCellsWithRemovedValue();
-
-    private IEnumerable<GameGridCell> GetUninitiatedCells()
-        => cells.Where( cell => !cell.IsInitialized );
-
-    private IEnumerable<GameGridCell> GetCellsWithRemovedValue()
-        => cells.Where( cell => cell.IsInitialized && !cell.HasUserFacingValue );
+        => cells.Where( cell => !cell.HasUserFacingValue );
 
     // Using a list here, because we need to get the counts of the cells with the specific candidate every time
     public List<GameGridCell> GetCellsWithSpecificCandidate( int candidate )
