@@ -30,8 +30,10 @@ public class PuzzleResolver
                 }
                 bool success = pattern.TryResolve( gameData, out int resolvedWithThisPattern, cancellationToken );
                 resolvedInThisCycle += resolvedWithThisPattern;
-                if ( success )
+                if ( success && !gameData.AllCells.GetCellsWithNoValue().Any() )
+                {
                     return true;
+                }
             }
         } while ( resolvedInThisCycle > 0 );
 
