@@ -1,6 +1,4 @@
-﻿using YASudoku.Common;
-using YASudoku.Services.JournalingServices;
-using YASudoku.ViewModels.GameViewModel.VisualStates;
+﻿using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 

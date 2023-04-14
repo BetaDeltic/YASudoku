@@ -2,27 +2,11 @@
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public class SelectCellCmd
+public class SelectCellCmd : CommandsBase
 {
-    private readonly CommonButtonVisualState pencil;
-    private readonly CommonButtonVisualState eraser;
-    private readonly NumPadVisualState numPad;
-    private readonly GameGridVisualState grid;
-    private readonly VisualStatesHandler visualState;
-
-    private NumPadButton? SelectedNumber => numPad.SelectedButton;
-    private GameGridCellVisualData? SelectedCell => grid.SelectedCell;
-
     private int SelectedButtonNumber => numPad.SelectedButtonNumber;
 
-    public SelectCellCmd( VisualStatesHandler visualState )
-    {
-        pencil = visualState.PencilVS;
-        eraser = visualState.EraserVS;
-        numPad = visualState.NumPadVS;
-        grid = visualState.GameGridVS;
-        this.visualState = visualState;
-    }
+    public SelectCellCmd( VisualStatesHandler visualState ) : base( visualState ) { }
 
     public void SelectCell( int newSelectedCellIndex )
     {
@@ -38,7 +22,7 @@ public class SelectCellCmd
         }
 
         if ( numPad.IsAnyNumberSelected() ) {
-            UserIsTryingToChangeCellValue( newSelectedCellIndex );
+            UserIsTryingToChangeCellValueWithSelectedNumber( newSelectedCellIndex );
             return;
         }
 
@@ -52,7 +36,7 @@ public class SelectCellCmd
         grid.SelectNewCell( newSelectedCellIndex );
     }
 
-    private void UserIsTryingToChangeCellValue( int newSelectedCellIndex )
+    private void UserIsTryingToChangeCellValueWithSelectedNumber( int newSelectedCellIndex )
     {
         grid.SelectNewCell( newSelectedCellIndex );
 

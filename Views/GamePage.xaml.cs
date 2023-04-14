@@ -34,12 +34,13 @@ public partial class GamePage : ContentPage
         InitializeButtons();
 
         SettingsFlyout.ServiceProvider = gameVM.serviceProvider;
-        SettingsFlyout.SetBinding( SettingsFlyout.IsFlyoutVisibleProperty, new Binding( nameof( VisualStatesHandler.AreSettingsVisible ), BindingMode.TwoWay, source: gameVM.VisualState ) );
+        SettingsFlyout.SetBinding( SettingsFlyout.IsFlyoutVisibleProperty,
+            new Binding( nameof( SettingsVisualState.AreSettingsVisible ), BindingMode.TwoWay, source: gameVM.VisualState.SettingsVS ) );
 
-        TimerLbl.SetBinding( Label.TextProperty, new Binding( nameof( VisualStatesHandler.TimerText ), source: gameVM.VisualState ) );
+        TimerLbl.SetBinding( Label.TextProperty, new Binding( nameof( TimerVisualState.TimerText ), source: gameVM.VisualState.TimerVS ) );
 
         gameVM.VisualState.Victory += GameVM_Victory;
-        gameVM.NewGameAfterFinishedOne += GameVM_NewGameAfterFinishedOne;
+        gameVM.VisualState.NewGameAfterFinishedOne += GameVM_NewGameAfterFinishedOne;
 
         PropertyChanged += GamePage_PropertyChanged;
         Appearing += GamePage_Appearing;

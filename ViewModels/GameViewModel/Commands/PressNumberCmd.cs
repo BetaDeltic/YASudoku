@@ -2,29 +2,13 @@
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public class PressNumberCmd
+public class PressNumberCmd : CommandsBase
 {
-    private readonly CommonButtonVisualState pencil;
-    private readonly CommonButtonVisualState eraser;
-    private readonly NumPadVisualState numPad;
-    private readonly GameGridVisualState grid;
-    private readonly VisualStatesHandler visualState;
-
-    private GameGridCellVisualData? SelectedCell => grid.SelectedCell;
-    private NumPadButton? SelectedNumber => numPad.SelectedButton;
-
-    public PressNumberCmd( VisualStatesHandler visualState )
-    {
-        pencil = visualState.PencilVS;
-        eraser = visualState.EraserVS;
-        numPad = visualState.NumPadVS;
-        grid = visualState.GameGridVS;
-        this.visualState = visualState;
-    }
+    public PressNumberCmd( VisualStatesHandler visualState ) : base( visualState ) { }
 
     public void PressNumber( int pressedNumber )
     {
-        if ( visualState.IsPaused ) {
+        if ( IsPaused ) {
             return;
         }
 
@@ -66,7 +50,7 @@ public class PressNumberCmd
             numPad.SelectNewNumber( pressedNumber );
             return;
         }
-        
+
         numPad.SelectNewNumber( pressedNumber );
         if ( SelectedNumber == null ) return;
 

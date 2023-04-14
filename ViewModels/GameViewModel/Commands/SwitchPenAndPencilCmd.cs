@@ -4,19 +4,19 @@ namespace YASudoku.ViewModels.GameViewModel.Commands;
 
 public class SwitchPenAndPencilCmd
 {
-    private readonly CommonButtonVisualState visualState;
+    private readonly CommonButtonVisualState commonVS;
 
     public SwitchPenAndPencilCmd( CommonButtonVisualState visualState )
     {
-        this.visualState = visualState;
+        commonVS = visualState;
     }
 
     public void SwitchPenAndPencil()
     {
-        if ( visualState.IsActive ) {
-            visualState.DeactivateButton();
+        if ( commonVS.IsActive ) {
+            commonVS.DeactivateButton();
         } else {
-            visualState.ActivateButton();
+            commonVS.ActivateButton();
         }
     }
 }

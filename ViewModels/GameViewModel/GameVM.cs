@@ -10,8 +10,6 @@ namespace YASudoku.ViewModels.GameViewModel;
 
 public partial class GameVM : VMsBase, IDisposable
 {
-    public event Action? NewGameAfterFinishedOne;
-
     public readonly int gridSize = 9;
 
     private readonly IPuzzleGenerator generator;
@@ -24,6 +22,11 @@ public partial class GameVM : VMsBase, IDisposable
     private PressNumberCmd? pressNumberCmd;
     private SelectEraserCmd? selectEraserCmd;
     private SelectCellCmd? selectCellCmd;
+    private NewGameCmd? newGameCmd;
+    private RestartGameCmd? restartGameCmd;
+    private PauseGameCmd? pauseGameCmd;
+    private SettingsCmd? settingsCmd;
+    private UndoCmd? undoCmd;
 
     public GameVM( IPuzzleGenerator puzzleGenerator, ISettingsService settingsService, IServiceProvider serviceProvider,
         IPlayerJournalingService journalingService )
@@ -40,56 +43,48 @@ public partial class GameVM : VMsBase, IDisposable
         GC.SuppressFinalize( this );
     }
 
-    [RelayCommand]
-    public void StartNewGame()
+    public void PrepareGameView( bool generateNew )
     {
-        if ( VisualState == null ) return;
+        GameDataContainer gameData = GetPuzzleData( generateNew );
+        GameGridVisualDataCollection visualData = new( gameData.AllCells, gridSize, serviceProvider );
 
-        VisualState.StopTimer();
+        VisualState = new( gridSize, visualData, serviceProvider );
 
-        ResetVisualStatesToDefault();
+        journal.SetVisualState( VisualState );
 
-        GameDataContainer newGameData = generator.GenerateNewPuzzle();
-        VisualState.GameData.ReplaceCollection( newGameData.AllCells );
-        VisualState.UpdateAllButtonRemainingCounts();
-
-        PrepareUIForNewGame();
-    }
-
-    [RelayCommand]
-    public void RestartGame()
-    {
-        if ( VisualState == null ) return;
-
-        ResetVisualStatesToDefault();
-
-        VisualState.GameData.RestartCellValues();
+        switchPenAndPencilCmd = new( VisualState.PencilVS );
+        pressNumberCmd = new( VisualState );
+        selectCellCmd = new( VisualState );
+        selectEraserCmd = new( VisualState );
+        newGameCmd = new( VisualState, generator, journal );
+        restartGameCmd = new( VisualState );
+        pauseGameCmd = new( VisualState );
+        settingsCmd = new( VisualState.SettingsVS );
+        undoCmd = new( journal );
 
         VisualState.UpdateAllButtonRemainingCounts();
-
-        PrepareUIForNewGame();
     }
 
-    [RelayCommand]
-    public void PauseGame()
+    private GameDataContainer GetPuzzleData( bool generateNew )
     {
-        if ( VisualState == null ) return;
-
-        // User is trying to unpause the game
-        if ( VisualState.IsPaused ) {
-            VisualState.PauseVS.DeactivateButton();
-            VisualState.GameGridVS.ShowAllCellValues();
-            VisualState.UnpauseTimer();
-            // User is trying to pause the game
+        GameDataContainer gameData;
+        if ( generateNew ) {
+            gameData = generator.GenerateNewPuzzle();
         } else {
-            VisualState.StopTimer();
-            VisualState.PauseVS.ActivateButton();
-            VisualState.NumPadVS.DeselectCurrentNumber();
-            VisualState.GameGridVS.DeselectCell();
-            VisualState.GameGridVS.UnhighlightCellsWithSameNumber();
-            VisualState.GameGridVS.HideAllCellValues();
+            PuzzleLoader loader = new();
+            gameData = generator.GenerateNewPuzzle();
         }
+        return gameData;
     }
+
+    [RelayCommand]
+    public void StartNewGame() => newGameCmd?.NewGame();
+
+    [RelayCommand]
+    public void RestartGame() => restartGameCmd?.RestartGame();
+
+    [RelayCommand]
+    public void PauseGame() => pauseGameCmd?.TogglePausedState();
 
     [RelayCommand]
     public void SwitchPenAndPencil() => switchPenAndPencilCmd?.SwitchPenAndPencil();
@@ -104,70 +99,10 @@ public partial class GameVM : VMsBase, IDisposable
     public void SelectCell( int selectedCellIndex ) => selectCellCmd?.SelectCell( selectedCellIndex );
 
     [RelayCommand]
-    public void OpenSettings()
-    {
-        if ( VisualState == null ) return;
-
-        VisualState.AreSettingsVisible = true;
-    }
+    public void OpenSettings() => settingsCmd?.OpenSettings();
 
     [RelayCommand]
-    public void UndoLastAction() => journal.ReverseTransaction();
-
-    public void PrepareGameView( bool generateNew )
-    {
-        GameDataContainer gameData = GetPuzzleData( generateNew );
-        GameGridVisualDataCollection visualData = new( gameData.AllCells, gridSize, serviceProvider );
-
-        VisualState = new( gridSize, visualData, serviceProvider );
-
-        journal.SetVisualState( VisualState );
-
-        switchPenAndPencilCmd = new( VisualState.PencilVS );
-        pressNumberCmd = new( VisualState );
-        selectCellCmd = new( VisualState );
-        selectEraserCmd = new( VisualState );
-
-        VisualState.UpdateAllButtonRemainingCounts();
-    }
+    public void UndoLastAction() => undoCmd?.UndoLastActionInJournal();
 
     public void OnPageAppearing() => VisualState?.StartGame();
-
-    private GameDataContainer GetPuzzleData( bool generateNew )
-    {
-        GameDataContainer gameData;
-        if ( generateNew ) {
-            gameData = generator.GenerateNewPuzzle();
-        } else {
-            PuzzleLoader loader = new();
-            gameData = generator.GenerateNewPuzzle();
-        }
-        return gameData;
-    }
-
-    private void ResetVisualStatesToDefault()
-    {
-        if ( VisualState!.IsPaused ) {
-            VisualState.GameGridVS.ShowAllCellValues();
-            VisualState.PauseVS.DeactivateButton();
-        }
-
-        VisualState.NumPadVS.DeselectCurrentNumber();
-        VisualState.GameGridVS.DeselectCell();
-        VisualState.GameGridVS.UnhighlightCellsWithSameNumber();
-
-        if ( VisualState.IsPencilActive )
-            VisualState.PencilVS.DeactivateButton();
-
-        journal.ClearJournal();
-    }
-
-    private void PrepareUIForNewGame()
-    {
-        if ( VisualState!.CurrentVisualState == VisualStates.VisualStates.Finished ) {
-            NewGameAfterFinishedOne?.Invoke();
-        }
-
-        VisualState.StartGame();
-    }
 }
