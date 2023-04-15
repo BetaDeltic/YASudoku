@@ -54,16 +54,16 @@ public class PressNumberCmd : CommandsBase
         numPad.SelectNewNumber( pressedNumber );
         if ( SelectedNumber == null ) return;
 
+        if ( pencil.IsActive ) {
+            UserIsTryingToChangeCellCandidates( pressedNumber );
+            return;
+        }
+
         // User wants to remove value from cell
         if ( SelectedCell.UserFacingValue == pressedNumber ) {
             grid.RemoveValueFromSelectedCell();
             grid.HighlightSelectedCell();
             DeselectCurrentNumberAndUnhighlightSameCells();
-            return;
-        }
-
-        if ( pencil.IsActive ) {
-            UserIsTryingToChangeCellCandidates( pressedNumber );
             return;
         }
 
@@ -88,7 +88,8 @@ public class PressNumberCmd : CommandsBase
 
         // User is trying to change candidates of solved cell
         if ( SelectedCell.HasUserFacingValue ) {
-            DeselectCurrentNumberAndUnhighlightSameCells();
+            grid.DeselectCell();
+            grid.HighlightCellsWithSameNumber( pressedNumber );
             return;
         }
 

@@ -78,8 +78,10 @@ public class SelectCellCmd : CommandsBase
 
     private void UserIsTryingToChangeCellCandidates()
     {
-        if ( SelectedCell!.HasUserFacingValue )
+        if ( SelectedCell!.HasUserFacingValue ) {
+            numPad.DeselectCurrentNumber();
             return;
+        }
 
         // User wants to remove value from candidates
         if ( SelectedCell.HasNumberAsCandidate( SelectedButtonNumber ) ) {
