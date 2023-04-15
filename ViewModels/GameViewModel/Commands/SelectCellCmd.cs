@@ -103,6 +103,7 @@ public class SelectCellCmd : CommandsBase
         if ( !SelectedCell!.HasUserFacingValue ) {
             SelectedCell.RemoveAllCandidates();
             grid.DeselectCell();
+            grid.UnhighlightCellsWithSameNumber();
             return;
         }
 
