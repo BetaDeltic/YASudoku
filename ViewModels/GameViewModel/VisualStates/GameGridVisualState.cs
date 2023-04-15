@@ -31,7 +31,7 @@ public class GameGridVisualState
 
         SelectedCell = allCells[ cellIndex ];
 
-        SelectNewCell();
+        HighlightNewlySelectedCell();
     }
 
     public void SelectNewCell( GameGridCellVisualData cell )
@@ -40,14 +40,14 @@ public class GameGridVisualState
 
         SelectedCell = cell;
 
-        SelectNewCell();
+        HighlightNewlySelectedCell();
     }
 
-    private void SelectNewCell()
+    private void HighlightNewlySelectedCell()
     {
-        HighlightSelectedCell();
-
         if ( SelectedCell!.HasUserFacingValue ) HighlightCellsWithSameNumber( SelectedCell.UserFacingValue );
+
+        HighlightSelectedCell();
     }
 
     public void DeselectCell()

@@ -266,6 +266,8 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         IsHidingAllValues = true;
     }
 
+    internal void LockCellInternal() => IsLockedForChanges = true;
+
     public void RemoveAllCandidates()
         => GetAllCandidateValues().ForEach( candidate => RemoveCandidate( candidate ) );
 

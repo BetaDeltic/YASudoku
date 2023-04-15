@@ -45,6 +45,8 @@ public class GameGridVisualDataCollection
         } );
     }
 
+    public bool Any( Func<GameGridCellVisualData, bool> func ) => visualCells.Any( func );
+
     public void ForEach( Action<GameGridCellVisualData> action ) => visualCells.ForEach( action );
 
     public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func ) => visualCells.Where( func );

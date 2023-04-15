@@ -1,12 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using YASudoku.Common;
+﻿using YASudoku.Common;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
 public enum GameStates { Starting, Running, Finished };
 
-public partial class VisualStatesHandler : ObservableObject, IDisposable
+public class VisualStatesHandler : IDisposable
 {
     public event Action? Victory;
     public event Action? NewGameData;
@@ -66,7 +65,7 @@ public partial class VisualStatesHandler : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        TimerVS?.Dispose();
+        TimerVS.Dispose();
         GC.SuppressFinalize( this );
     }
 
@@ -89,10 +88,10 @@ public partial class VisualStatesHandler : ObservableObject, IDisposable
     }
 
     private bool ThereAreEmptyCells()
-        => GameData.Where( cell => !cell.HasUserFacingValue ).Any();
+        => GameData.Any( cell => !cell.HasUserFacingValue );
 
     private bool ThereAreIncorrectCells()
-        => GameData.Where( cell => cell.HasUserFacingValue && !cell.HasCorrectValue ).Any();
+        => GameData.Any( cell => cell.HasUserFacingValue && !cell.HasCorrectValue );
 
     private void VisualStatesHandler_NewGameData()
         => GameGridVS.ChangeCellData( GameData );
