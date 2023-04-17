@@ -152,7 +152,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     public void WithActiveLockedCell_ClickSameCell_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         ClickLockedCell( out _ );
         // Assert
@@ -165,7 +165,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         ClickLockedCell( out _ );
         // Assert
@@ -178,7 +178,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     public void WithActiveLockedCell_ClickDifferentLockedCell_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickDifferentLockedCell();
         // Assert
@@ -193,7 +193,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickLockedCell_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert
@@ -223,7 +223,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     public void WithActiveCellWithCorrectValue_ClickLockedCell_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert
@@ -238,7 +238,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     public void WithActiveCellWithIncorrectValue_ClickLockedCell_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert
@@ -254,7 +254,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert
@@ -271,7 +271,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         ClickLockedCell( out _ );
         // Assert
@@ -301,7 +301,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert
@@ -317,7 +317,7 @@ public class SelectLockedCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickLockedCell( out _ );
         // Assert

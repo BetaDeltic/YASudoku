@@ -224,7 +224,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     public void WithActiveCellWithIncorrectValue_ClickSameCell_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -237,7 +237,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -250,7 +250,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     public void WithActiveCellWithIncorrectValue_ClickDifferentCellWithIncorrectValue_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfDifferentEnabledNumber( out _ );
         // Assert
@@ -265,7 +265,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickCellWithIncorrectValue_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -280,7 +280,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     public void WithActiveLockedCell_ClickCellWithIncorrectValue_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -310,7 +310,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     public void WithActiveCellWithCorrectValue_ClickCellWithIncorrectValue_SelectsCell_HighlightsCellAndRelatedCells_HighlightsCellsWithSameValue()
     {
         // Arrange
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -326,7 +326,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -342,7 +342,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -374,7 +374,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert
@@ -390,7 +390,7 @@ public class SelectCellWithIncorrectValueTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Assert

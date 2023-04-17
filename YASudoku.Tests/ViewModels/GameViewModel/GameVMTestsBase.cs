@@ -20,14 +20,19 @@ public class GameVMTestsBase
 
     private readonly Mock<IPlayerJournalingService> journalMock = new();
 
+    private readonly List<int> usedIndexes = new();
+
     // Used during board preparation
-    public int DisabledNumber = 1; // All numbers are enabled by default, 1 is just a random choice here
+    public int DisabledNumber = 1; // All numbers are enabled by default, 1 and 4 are just a random choice here
+    public int DifferentDisabledNumber = 4;
     public int EnabledNumber = 2; // These will be enabled during board preparation
     public int DifferentEnabledNumber = 3;
 
     // Calculated from board data
     public int IndexOfLockedCell;
     public int IndexOfDifferentLockedCell;
+    public int IndexOfLockedCellWithValueOfEnabledNumber;
+    public int IndexOfLockedCellWithValueOfDisabledNumber;
     public int IndexOfEmptyCell;
     public int IndexOfDifferentEmptyCell;
     public int IndexOfCellFilledWithCorrectValueOfEnabledNumber;
@@ -35,10 +40,14 @@ public class GameVMTestsBase
     public int IndexOfCellFilledWithIncorrectValueOfEnabledNumber;
     public int IndexOfCellFilledWithIncorrectValueOfDifferentEnabledNumber;
     public int IndexOfCellFilledWithCorrectValueOfDisabledNumber;
+    public int IndexOfCellFilledWithCorrectValueOfDifferentDisabledNumber;
     public int IndexOfCellFilledWithIncorrectValueOfDisabledNumber;
+    public int IndexOfCellFilledWithIncorrectValueOfDifferentDisabledNumber;
     public int IndexOfCellWithCandidateOfEnabledNumber;
     public int IndexOfCellWithCandidateOfDisabledNumber;
     public int IndexOfCellWithCandidateOfDifferentEnabledNumber;
+
+    public const string gameDataNotInitialized = $"{nameof( VisualStatesHandler.GameData )} container is not initiated!";
 
     public GameVMTestsBase()
     {
@@ -66,28 +75,23 @@ public class GameVMTestsBase
             .ForEach( cell => cell.SetUserFacingValueInternal( 0 ) );
 
         // Removing value from one cell that has disabled number in order to put it to incorrect position
-        GameData.Where( cell => cell.UserFacingValue == DisabledNumber ).First().SetUserFacingValueInternal( 0 );
+        GameData.Where( cell => cell.UserFacingValue == DisabledNumber ).Last().SetUserFacingValueInternal( 0 );
 
-        IndexOfLockedCell = GameData.IndexOf( GameData.Where( cell => cell.UserFacingValue != 0 ).First() );
-        IndexOfDifferentLockedCell = GameData.IndexOf( GameData.Where( cell => cell.UserFacingValue != 0 ).Skip( 1 ).First() );
-        IndexOfCellFilledWithCorrectValueOfEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == EnabledNumber ).First() );
-        IndexOfCellFilledWithCorrectValueOfDifferentEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == DifferentEnabledNumber ).First() );
-        IndexOfCellFilledWithIncorrectValueOfEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == DifferentEnabledNumber ).Skip( 1 ).First() );
-        IndexOfCellFilledWithIncorrectValueOfDifferentEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == EnabledNumber ).Skip( 1 ).First() );
-        IndexOfCellFilledWithCorrectValueOfDisabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.UserFacingValue == DisabledNumber ).Skip( 1 ).First() );
-        IndexOfCellFilledWithIncorrectValueOfDisabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == EnabledNumber ).Skip( 2 ).First() );
-        IndexOfCellWithCandidateOfEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == EnabledNumber ).Skip( 3 ).First() );
-        IndexOfCellWithCandidateOfDisabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == EnabledNumber ).Skip( 4 ).First() );
-        IndexOfCellWithCandidateOfDifferentEnabledNumber =
-            GameData.IndexOf( GameData.Where( cell => cell.CorrectValue == DifferentEnabledNumber ).Skip( 2 ).First() );
+        IndexOfLockedCell = GetUnusedIndexOfFilledCellAndSaveIt();
+        IndexOfDifferentLockedCell = GetUnusedIndexOfFilledCellAndSaveIt();
+        IndexOfCellFilledWithCorrectValueOfEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfCellFilledWithCorrectValueOfDifferentEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DifferentEnabledNumber );
+        IndexOfCellFilledWithIncorrectValueOfEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DifferentEnabledNumber );
+        IndexOfCellFilledWithIncorrectValueOfDifferentEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfCellFilledWithCorrectValueOfDisabledNumber = GetUnusedIndexOfCellWithSpecificUserFacingValueAndSaveIt( DisabledNumber );
+        IndexOfCellFilledWithCorrectValueOfDifferentDisabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DifferentDisabledNumber );
+        IndexOfCellFilledWithIncorrectValueOfDisabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfCellFilledWithIncorrectValueOfDifferentDisabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DifferentEnabledNumber );
+        IndexOfCellWithCandidateOfEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfCellWithCandidateOfDisabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfCellWithCandidateOfDifferentEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DifferentEnabledNumber );
+        IndexOfLockedCellWithValueOfEnabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( EnabledNumber );
+        IndexOfLockedCellWithValueOfDisabledNumber = GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( DisabledNumber );
 
         GameData[ IndexOfLockedCell ].LockCellInternal();
         GameData[ IndexOfCellFilledWithCorrectValueOfEnabledNumber ].SetUserFacingValueInternal( EnabledNumber );
@@ -98,35 +102,91 @@ public class GameVMTestsBase
         GameData[ IndexOfCellWithCandidateOfEnabledNumber ].AddCandidate( EnabledNumber );
         GameData[ IndexOfCellWithCandidateOfDisabledNumber ].AddCandidate( DisabledNumber );
         GameData[ IndexOfCellWithCandidateOfDifferentEnabledNumber ].AddCandidate( DifferentEnabledNumber );
+        GameData[ IndexOfLockedCellWithValueOfEnabledNumber ].SetUserFacingValueInternal( EnabledNumber );
+        GameData[ IndexOfLockedCellWithValueOfEnabledNumber ].LockCellInternal();
+        GameData[ IndexOfLockedCellWithValueOfDisabledNumber ].SetUserFacingValueInternal( DisabledNumber );
+        GameData[ IndexOfLockedCellWithValueOfDisabledNumber ].LockCellInternal();
 
-        IndexOfEmptyCell = GameData.IndexOf( GameData.Where( cell => cell.UserFacingValue == 0 ).First() );
-        IndexOfDifferentEmptyCell =
-            GameData.IndexOf( GameData.Where( cell => cell.UserFacingValue == 0 ).Skip( 1 ).First() );
+        IndexOfEmptyCell = GetUnusedIndexOfEmptyCellAndSaveIt();
+        IndexOfDifferentEmptyCell = GetUnusedIndexOfEmptyCellAndSaveIt();
     }
 
-    public const string gameDataNotInitialized = $"{nameof( VisualStatesHandler.GameData )} container is not initiated!";
+    private int GetUnusedIndexOfFilledCellAndSaveIt()
+    {
+        int unusedIndex =
+            GameData.Select( ( cell, index ) => cell.UserFacingValue != 0 && !usedIndexes.Contains( index ) ? index : -1 )
+            .First( index => index != -1 );
+        usedIndexes.Add( unusedIndex );
+
+        return unusedIndex;
+    }
+
+    private int GetUnusedIndexOfEmptyCellAndSaveIt()
+    {
+        int unusedIndex =
+            GameData.Select( ( cell, index ) => cell.UserFacingValue == 0 && !usedIndexes.Contains( index ) ? index : -1 )
+            .First( index => index != -1 );
+        usedIndexes.Add( unusedIndex );
+
+        return unusedIndex;
+    }
+
+    private int GetUnusedIndexOfCellWithSpecificCorrectValueAndSaveIt( int expectedCorrectValue )
+    {
+        int unusedIndex =
+            GameData.Select( ( cell, index ) => cell.CorrectValue == expectedCorrectValue && !usedIndexes.Contains( index ) ? index : -1 )
+            .First( index => index != -1 );
+
+        usedIndexes.Add( unusedIndex );
+
+        return unusedIndex;
+    }
+
+    private int GetUnusedIndexOfCellWithSpecificUserFacingValueAndSaveIt( int expectedUserFacingValue )
+    {
+        int unusedIndex =
+            GameData.Select( ( cell, index ) => cell.UserFacingValue == expectedUserFacingValue && !usedIndexes.Contains( index ) ? index : -1 )
+            .First( index => index != -1 );
+        usedIndexes.Add( unusedIndex );
+        return unusedIndex;
+    }
 
     public void ActivateEraser() => gameVM.SelectEraser();
-
     public void ActivatePencil() => gameVM.SwitchPenAndPencil();
 
-    // At this point same implementation, semantically used in different contexts
-    public void ActivateEmptyCell() => ClickEmptyCell();
-    public void ActivateLockedCell() => ClickLockedCell( out _ );
     public void ActivateEnabledNumber() => SelectEnabledNumber();
     public void ActivateDisabledNumber() => SelectDisabledNumber();
-    public void ActivateCellWithCandidateOfEnabledNumber() => ClickCellWithCandidateOfEnabledNumber();
-    public void ActivateCellFilledWithCorrectValueOfEnabledNumber()
-        => ClickCellFilledWithCorrectValueOfEnabledNumber( out _ );
-    public void ActivateCellFilledWithIncorrectValueOfEnabledNumber()
-        => ClickCellFilledWithIncorrectValueOfEnabledNumber( out _ );
 
-    public GameGridCellVisualData ClickEmptyCell()
-        => ClickCellAndReturnIt( IndexOfEmptyCell, out _ );
+    // At this point same implementation, semantically used in different contexts
+    public GameGridCellVisualData ActivateEmptyCell( out int originalValue ) => ClickEmptyCell( out originalValue );
+    public GameGridCellVisualData ActivateLockedCell( out int originalValue ) => ClickLockedCell( out originalValue );
+    public GameGridCellVisualData ActivateLockedCellWithValueOfEnabledNumber( out int originalValue )
+        => ClickLockedCellWithValueOfEnabledNumber( out originalValue );
+    public GameGridCellVisualData ActivateLockedCellWithValueOfDisabledNumber( out int originalValue )
+        => ClickLockedCellWithValueOfDisabledNumber( out originalValue );
+    public GameGridCellVisualData ActivateCellWithCandidateOfEnabledNumber()
+        => ClickCellWithCandidateOfEnabledNumber();
+    public GameGridCellVisualData ActivateCellWithCandidateOfDisabledNumber()
+        => ClickCellWithCandidateOfDisabledNumber();
+    public GameGridCellVisualData ActivateCellFilledWithCorrectValueOfEnabledNumber( out int originalValue )
+        => ClickCellFilledWithCorrectValueOfEnabledNumber( out originalValue );
+    public GameGridCellVisualData ActivateCellFilledWithIncorrectValueOfEnabledNumber( out int originalValue )
+        => ClickCellFilledWithIncorrectValueOfEnabledNumber( out originalValue );
+    public GameGridCellVisualData ActivateCellFilledWithCorrectValueOfDisabledNumber( out int originalValue )
+        => ClickCellFilledWithCorrectValueOfDisabledNumber( out originalValue );
+    public GameGridCellVisualData ActivateCellFilledWithIncorrectValueOfDisabledNumber( out int originalValue )
+        => ClickCellFilledWithIncorrectValueOfDisabledNumber( out originalValue );
+
+    public GameGridCellVisualData ClickEmptyCell( out int originalValue )
+        => ClickCellAndReturnIt( IndexOfEmptyCell, out originalValue );
     public GameGridCellVisualData ClickDifferentEmptyCell()
         => ClickCellAndReturnIt( IndexOfDifferentEmptyCell, out _ );
     public GameGridCellVisualData ClickLockedCell( out int originalValue )
         => ClickCellAndReturnIt( IndexOfLockedCell, out originalValue );
+    public GameGridCellVisualData ClickLockedCellWithValueOfEnabledNumber( out int originalValue )
+        => ClickCellAndReturnIt( IndexOfLockedCellWithValueOfEnabledNumber, out originalValue );
+    public GameGridCellVisualData ClickLockedCellWithValueOfDisabledNumber( out int originalValue )
+        => ClickCellAndReturnIt( IndexOfLockedCellWithValueOfDisabledNumber, out originalValue );
     public GameGridCellVisualData ClickDifferentLockedCell()
         => ClickCellAndReturnIt( IndexOfDifferentLockedCell, out _ );
     public GameGridCellVisualData ClickCellWithCandidateOfEnabledNumber()
@@ -156,7 +216,9 @@ public class GameVMTestsBase
     }
 
     public void SelectEnabledNumber() => gameVM.PressNumber( EnabledNumber );
+    public void SelectDifferentEnabledNumber() => gameVM.PressNumber( DifferentEnabledNumber );
     public void SelectDisabledNumber() => gameVM.PressNumber( DisabledNumber );
+    public void SelectDifferentDisabledNumber() => gameVM.PressNumber( DifferentDisabledNumber );
 
     public static void AssertCellIsFilledWithSpecificValue( GameGridCellVisualData cell, int expectedValue )
         => Assert.Equal( expectedValue, cell.UserFacingValue );
@@ -175,6 +237,11 @@ public class GameVMTestsBase
         Assert.True( GetNumPadButtonFromNumber( buttonNumber ).IsActive );
         Assert.Equal( GetNumPadButtonFromNumber( buttonNumber ), SelectedNumber );
     }
+
+    public void AssertNoNumberIsActive() => Assert.DoesNotContain( NumPadVS.NumPadButtons, button => button.IsActive );
+
+    public void AssertNumberIsNotActive( int buttonNumber )
+        => Assert.False( GetNumPadButtonFromNumber( buttonNumber ).IsActive );
 
     public void AssertNumberIsEnabled( int buttonNumber )
         => Assert.True( GetNumPadButtonFromNumber( buttonNumber ).IsEnabled );
@@ -242,6 +309,8 @@ public class GameVMTestsBase
     }
 
     public void AssertEraserIsSelected() => Assert.True( VisualState.IsEraserActive );
+
+    public void AssertEraserIsNotSelected() => Assert.False( VisualState.IsEraserActive );
 
     public void AssertPencilIsSelected() => Assert.True( VisualState.IsPencilActive );
 

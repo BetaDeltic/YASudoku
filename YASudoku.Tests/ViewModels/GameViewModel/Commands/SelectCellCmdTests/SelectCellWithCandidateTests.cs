@@ -229,7 +229,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickCellWithCandidates_SelectsCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -243,7 +243,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     public void WithActiveLockedCell_ClickCellWithCandidates_SelectsCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -258,7 +258,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -273,7 +273,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateLockedCell();
+        ActivateLockedCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -301,7 +301,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     public void WithActiveCellWithCorrectValue_ClickCellWithCandidates_SelectsCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -315,7 +315,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     public void WithActiveCellWithIncorrectValue_ClickCellWithCandidates_SelectsCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -330,7 +330,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithCorrectValueOfEnabledNumber();
+        ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert
@@ -345,7 +345,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateCellFilledWithIncorrectValueOfEnabledNumber();
+        ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
         // Assert

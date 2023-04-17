@@ -9,7 +9,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
     {
         // Arrange
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellIsSelected( affectedCell );
         AssertCellIsHighlightedAsSelected( affectedCell );
@@ -22,7 +22,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
     {
         // Arrange
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellIsSelected( affectedCell );
         AssertCellIsHighlightedAsSelected( affectedCell );
@@ -34,9 +34,9 @@ public class SelectEmptyCellTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickSameEmptyCell_DeselectsCell_UnhighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertNoCellIsSelected();
         AssertCellIsNotSelectedOrHighlighted( affectedCell );
@@ -50,7 +50,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         // Arrange
         ActivateEnabledNumber();
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellIsFilledWithSpecificValue( affectedCell, EnabledNumber );
         AssertNumberIsSelected( EnabledNumber );
@@ -64,7 +64,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickDifferentEmptyCell_DeselectsPreviousCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickDifferentEmptyCell();
         // Assert
@@ -80,7 +80,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         // Arrange
         ActivateDisabledNumber();
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertNoNumberIsSelected();
         AssertCellIsSelected( affectedCell );
@@ -95,7 +95,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         // Arrange
         ActivateEraser();
         // Act
-        ClickEmptyCell();
+        ClickEmptyCell( out _ );
         // Assert
         AssertNoTransactionAddedToJournal();
         AssertNoCellIsSelected();
@@ -109,7 +109,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         // Arrange
         ActivatePencil();
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellIsSelected( affectedCell );
         AssertCellIsHighlightedAsSelected( affectedCell );
@@ -125,7 +125,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         ActivatePencil();
         ActivateEnabledNumber();
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellContainsCandidate( affectedCell, EnabledNumber );
         AssertNumberIsSelected( EnabledNumber );
@@ -143,7 +143,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         ActivatePencil();
         ActivateDisabledNumber();
         // Act
-        GameGridCellVisualData affectedCell = ClickEmptyCell();
+        GameGridCellVisualData affectedCell = ClickEmptyCell( out _ );
         // Assert
         AssertCellContainsCandidate( affectedCell, DisabledNumber );
         AssertNumberIsSelected( DisabledNumber );
@@ -161,7 +161,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
         ActivatePencil();
         ActivateEraser();
         // Act
-        ClickEmptyCell();
+        ClickEmptyCell( out _ );
         // Assert
         AssertNoCellIsSelected();
         AssertNoCellIsHighlighted();
@@ -174,9 +174,9 @@ public class SelectEmptyCellTests : GameVMTestsBase
     {
         // Arrange
         ActivatePencil();
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
-        ClickEmptyCell();
+        ClickEmptyCell( out _ );
         // Assert
         AssertPencilIsSelected();
         AssertNoCellIsSelected();
@@ -187,7 +187,7 @@ public class SelectEmptyCellTests : GameVMTestsBase
     public void WithActiveEmptyCell_ClickDifferentEmptyCell_SelectsCell_HighlightsCellAndRelatedCells()
     {
         // Arrange
-        ActivateEmptyCell();
+        ActivateEmptyCell( out _ );
         // Act
         GameGridCellVisualData affectedCell = ClickDifferentEmptyCell();
         // Assert
