@@ -45,9 +45,6 @@ public partial class NumPadButton : ObservableObject
         }
     }
 
-    [ObservableProperty]
-    private string number = string.Empty;
-
     private int _remainingCount;
     private bool _isActive;
 
