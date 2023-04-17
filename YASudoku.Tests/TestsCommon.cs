@@ -32,6 +32,7 @@ public class TestsCommon
         foreach ( (int number, int index) in sequence.Select( ( number, index ) => (number, index) ) ) {
             if ( number > 0 ) {
                 collection[ index ].Initialize( number );
+                collection[ index ].SetCorrectValueToUserFacingValue();
             }
         }
     }
@@ -211,6 +212,15 @@ public class TestsCommon
             x.AddSubTransaction( It.IsAny<GeneratorTransactionTypes>(), It.IsAny<GameGridCell>(), It.IsAny<int>() )
         );
         return mock.Object;
+    }
+
+    public static IServiceProvider GetServiceProviderMock()
+    {
+        Mock<IServiceProvider> serviceProviderMock = new();
+        serviceProviderMock.Setup( x => x.GetService( typeof( IPlayerJournalingService ) ) ).Returns( new PlayerJournalingService() );
+        serviceProviderMock.Setup( x => x.GetService( typeof( ISettingsService ) ) ).Returns( GetSettingsMock() );
+
+        return serviceProviderMock.Object;
     }
 
     public static ISettingsService GetSettingsMock()
