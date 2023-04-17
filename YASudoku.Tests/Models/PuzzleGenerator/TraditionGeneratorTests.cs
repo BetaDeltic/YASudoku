@@ -9,28 +9,36 @@ public class TraditionGeneratorTests
     public const int gridSize = 9;
     public TraditionalGenerator? generator;
 
-    [Fact (Skip = "To be run only manually, takes multiple minutes to finish")]
+    [Fact( Skip = "To be run only manually, takes multiple minutes to finish" )]
     //[Fact]
-    public void AllGeneratedPuzzlesAreCorrect()
+    public void AllGeneratedPuzzlesAreCorrectAndSolvableByResolver()
     {
         for ( int i = 0; i < 10000; i++ ) {
-            // Arrange
-            generator = new( new GeneratorJournalingService() );
-            CancellationTokenSource cancelSource = new();
-            YASudoku.Models.PuzzleResolver.PuzzleResolver puzzleResolver = new( cancelSource.Token );
-
-            // Act
-            GameDataContainer gameData = generator.GenerateNewPuzzle();
-            bool isFilled = puzzleResolver.TryResolve( gameData );
-
-            // Assert
-            Assert.NotNull( gameData );
-            Assert.True( isFilled );
-            gameData.DebugPrintGeneratedPuzzle( $"Generated puzzle #{i}:" );
-            gameData.ByRows.ForEach( row => AssertPuzzleCollectionContainsEveryNumberOnce( row.GetAllCellValues() ) );
-            gameData.ByColumns.ForEach( column => AssertPuzzleCollectionContainsEveryNumberOnce( column.GetAllCellValues() ) );
-            gameData.ByBlocks.ForEach( block => AssertPuzzleCollectionContainsEveryNumberOnce( block.GetAllCellValues() ) );
+            AssertGeneratorCanGenerateOneResolvablePuzzle( i );
         }
+    }
+
+    [Fact]
+    public void CanGenerateOneResolvablePuzzle() => AssertGeneratorCanGenerateOneResolvablePuzzle( 0 );
+
+    private void AssertGeneratorCanGenerateOneResolvablePuzzle( int puzzleIndex = 0 )
+    {
+        // Arrange
+        generator = new( new GeneratorJournalingService() );
+        CancellationTokenSource cancelSource = new();
+        YASudoku.Models.PuzzleResolver.PuzzleResolver puzzleResolver = new( cancelSource.Token );
+
+        // Act
+        GameDataContainer gameData = generator.GenerateNewPuzzle();
+        bool isFilled = puzzleResolver.TryResolve( gameData );
+
+        // Assert
+        Assert.NotNull( gameData );
+        Assert.True( isFilled );
+        gameData.DebugPrintGeneratedPuzzle( $"Generated puzzle #{puzzleIndex}:" );
+        gameData.ByRows.ForEach( row => AssertPuzzleCollectionContainsEveryNumberOnce( row.GetAllCellValues() ) );
+        gameData.ByColumns.ForEach( column => AssertPuzzleCollectionContainsEveryNumberOnce( column.GetAllCellValues() ) );
+        gameData.ByBlocks.ForEach( block => AssertPuzzleCollectionContainsEveryNumberOnce( block.GetAllCellValues() ) );
     }
 
     private static void AssertPuzzleCollectionContainsEveryNumberOnce( IEnumerable<int> collection )
