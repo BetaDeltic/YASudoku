@@ -48,6 +48,8 @@ public class GameGridVisualState
         if ( SelectedCell!.HasUserFacingValue ) HighlightCellsWithSameNumber( SelectedCell.UserFacingValue );
 
         HighlightSelectedCell();
+        // candidates need to be highlighted after the related cells are highlighted
+        if ( SelectedCell.HasUserFacingValue ) HighlightCandidatesWithSameNumber( SelectedCell.UserFacingValue );
     }
 
     public void DeselectCell()
@@ -78,6 +80,12 @@ public class GameGridVisualState
 
         GetCellsWithSameNumber( number ).ForEach( cell => cell.HighlightCellAsSelected() );
 
+        HighlightCandidatesWithSameNumber( number );
+    }
+
+    private void HighlightCandidatesWithSameNumber( int number )
+    {
+        if ( number <= 0 ) return;
         GetCellsWithSameCandidateNumber( number ).ForEach( cell => cell.HighlightCandidate( number ) );
     }
 
@@ -111,9 +119,8 @@ public class GameGridVisualState
 
     public void ChangeSelectedCellValueAndNotify( int newValue, bool addToJournal = true )
     {
-        if ( SelectedCell == null || SelectedCell.IsLockedForChanges ) {
+        if ( SelectedCell == null || SelectedCell.IsLockedForChanges || SelectedCell.UserFacingValue == newValue )
             return;
-        }
 
         int previousValue = SelectedCell.UserFacingValue;
         SelectedCell.SetUserFacingValueAndNotifyRelatedCells( newValue, addToJournal );
