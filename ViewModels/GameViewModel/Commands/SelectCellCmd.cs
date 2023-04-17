@@ -64,8 +64,10 @@ public class SelectCellCmd : CommandsBase
         // User is trying to use disabled button for something else than removing
         if ( !SelectedNumber!.IsEnabled ) {
             numPad.DeselectCurrentNumber();
-            grid.DeselectCell();
             grid.UnhighlightCellsWithSameNumber();
+            grid.HighlightSelectedCell();
+            if ( SelectedCell.HasUserFacingValue )
+                grid.HighlightCellsWithSameNumber( SelectedCell.UserFacingValue );
             return;
         }
 
