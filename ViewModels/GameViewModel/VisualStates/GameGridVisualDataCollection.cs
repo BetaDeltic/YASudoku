@@ -18,10 +18,12 @@ public class GameGridVisualDataCollection
     {
         this.serviceProvider = serviceProvider;
 
-        if ( generatedCellData.Count == 0 ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with empty collection" );
+        if ( generatedCellData.Count == 0 )
+            throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with empty collection" );
 
         int expectedCount = gridSize * gridSize;
-        if ( generatedCellData.Count != expectedCount ) throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with {generatedCellData.Count} amount of cells, expected {expectedCount}." );
+        if ( generatedCellData.Count != expectedCount )
+            throw new ArgumentException( $"Tried to initialize {nameof( GameGridVisualDataCollection )} with {generatedCellData.Count} amount of cells, expected {expectedCount}." );
 
         visualCells = new( generatedCellData.Count );
 
@@ -51,7 +53,11 @@ public class GameGridVisualDataCollection
 
     internal int IndexOf( GameGridCellVisualData cell ) => visualCells.IndexOf( cell );
 
-    public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func ) => visualCells.Where( func );
+    internal IEnumerable<TOutput> Select<TOutput>( Func<GameGridCellVisualData, int, TOutput> func )
+        => visualCells.Select( func );
+
+    public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func )
+        => visualCells.Where( func );
 
     public void ReplaceCollection( GameGridCollection newCells )
     {
