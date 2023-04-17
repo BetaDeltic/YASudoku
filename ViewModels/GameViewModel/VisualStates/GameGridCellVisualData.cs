@@ -330,6 +330,8 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         UserFacingValue = newValue;
     }
 
+    internal void SetUserFacingValueInternal( int newValue ) => UserFacingValue = newValue;
+
     public void UnhighlightCandidate()
     {
         if ( HasUserFacingValue || highlightedCandidate == 0 ) return;

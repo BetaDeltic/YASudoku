@@ -49,6 +49,8 @@ public class GameGridVisualDataCollection
 
     public void ForEach( Action<GameGridCellVisualData> action ) => visualCells.ForEach( action );
 
+    internal int IndexOf( GameGridCellVisualData cell ) => visualCells.IndexOf( cell );
+
     public IEnumerable<GameGridCellVisualData> Where( Func<GameGridCellVisualData, bool> func ) => visualCells.Where( func );
 
     public void ReplaceCollection( GameGridCollection newCells )
