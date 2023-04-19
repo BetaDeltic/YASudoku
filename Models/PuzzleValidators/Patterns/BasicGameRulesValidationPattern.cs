@@ -1,4 +1,4 @@
-﻿namespace YASudoku.Models.PuzzleValidator.Patterns;
+﻿namespace YASudoku.Models.PuzzleValidators.Patterns;
 
 public class BasicGameRulesValidationPattern : IValidatorPattern
 {

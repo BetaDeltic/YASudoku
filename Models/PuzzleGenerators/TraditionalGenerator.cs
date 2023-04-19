@@ -23,7 +23,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     public GameDataContainer GenerateNewPuzzle()
     {
         gameData = new GameDataContainer( gridSize, commandJournal );
-        PuzzleValidator.PuzzleValidator validator = new();
+        PuzzleValidators.DefaultValidator validator = new();
         PuzzleResolvers.DefaultResolver puzzleResolver = new( cancelSource.Token );
         gameData.InitializeCellCollections(
             cellInitHandler: _ => CellActionHandler( validator ),
@@ -44,7 +44,7 @@ public class TraditionalGenerator : IPuzzleGenerator
         return gameData;
     }
 
-    private void CellActionHandler( PuzzleValidator.PuzzleValidator validator )
+    private void CellActionHandler( PuzzleValidators.DefaultValidator validator )
     {
         isValid = validator.IsValid( gameData! );
         if ( !isValid ) {

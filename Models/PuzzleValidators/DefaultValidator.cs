@@ -1,12 +1,12 @@
-﻿using YASudoku.Models.PuzzleValidator.Patterns;
+﻿using YASudoku.Models.PuzzleValidators.Patterns;
 
-namespace YASudoku.Models.PuzzleValidator;
+namespace YASudoku.Models.PuzzleValidators;
 
-public class PuzzleValidator
+public class DefaultValidator
 {
     private readonly List<IValidatorPattern> ValidatorPatterns = new();
 
-    public PuzzleValidator()
+    public DefaultValidator()
     {
         ValidatorPatterns.Add( new BasicGameRulesValidationPattern() );
         ValidatorPatterns.Add( new ExposedSingleCandidateValidationPattern() );

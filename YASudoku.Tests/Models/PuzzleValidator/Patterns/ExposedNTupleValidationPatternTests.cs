@@ -1,5 +1,5 @@
 ﻿using YASudoku.Models;
-using YASudoku.Models.PuzzleValidator.Patterns;
+using YASudoku.Models.PuzzleValidators.Patterns;
 
 namespace YASudoku.Tests.Models.PuzzleValidator.Patterns;
 
