@@ -9,7 +9,7 @@ public class SingleCandidatePattern : IResolverPattern
     /// Exposed/open single happens whenever there is a cell with only one possible candidate.
     /// </summary>
     /// <inheritdoc />
-    public bool TryResolve( GameDataContainer gameData, out int resolvedCells, CancellationToken cancellationToken )
+    public bool TryResolve( GameDataContainer gameData, out int resolvedCells, CancellationToken? cancellationToken )
         => ResolverHelper.RunResolverRepeatedlyOnAllCollections( gameData, TryResolveCollection, out resolvedCells, cancellationToken );
 
     private static bool TryResolveCollection( GameGridCollection collection, out int resolvedCells )

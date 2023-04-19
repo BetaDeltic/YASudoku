@@ -2,21 +2,20 @@
 
 namespace YASudoku.Models.PuzzleResolvers;
 
-public class DefaultResolver
+public class DefaultResolver : IPuzzleResolver
 {
     private readonly List<IResolverPattern> ResolverPatterns = new();
 
-    private CancellationToken cancellationToken;
+    private CancellationToken? cancellationToken;
 
-    public DefaultResolver( CancellationToken cancellationToken )
+    public DefaultResolver()
     {
         ResolverPatterns.Add( new SingleCandidatePattern() );
         ResolverPatterns.Add( new HiddenSinglePattern() );
         ResolverPatterns.Add( new ExposedNTuplePattern() );
-        this.cancellationToken = cancellationToken;
     }
 
-    public void ResetCancellationToken( CancellationToken newCancellationToken )
+    public void SetCancellationToken( CancellationToken newCancellationToken )
         => cancellationToken = newCancellationToken;
 
     public bool TryResolve( GameDataContainer gameData )
@@ -24,8 +23,8 @@ public class DefaultResolver
         int resolvedInThisCycle;
         do {
             resolvedInThisCycle = 0;
-            foreach ( var pattern in ResolverPatterns ) {
-                if ( cancellationToken.IsCancellationRequested ) {
+            foreach ( IResolverPattern pattern in ResolverPatterns ) {
+                if ( cancellationToken?.IsCancellationRequested == true ) {
                     return false;
                 }
                 bool success = pattern.TryResolve( gameData, out int resolvedWithThisPattern, cancellationToken );

@@ -2,6 +2,7 @@ using YASudoku.Models;
 using YASudoku.Services.JournalingServices;
 using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Models.PuzzleResolvers;
+using YASudoku.Models.PuzzleValidators;
 
 namespace YASudoku.Tests.Models.PuzzleGenerator;
 
@@ -25,9 +26,8 @@ public class TraditionGeneratorTests
     private void AssertGeneratorCanGenerateOneResolvablePuzzle( int puzzleIndex = 0 )
     {
         // Arrange
-        generator = new( new GeneratorJournalingService() );
-        CancellationTokenSource cancelSource = new();
-        DefaultResolver puzzleResolver = new( cancelSource.Token );
+        DefaultResolver puzzleResolver = new();
+        generator = new( new GeneratorJournalingService(), puzzleResolver, new DefaultValidator() );
 
         // Act
         GameDataContainer gameData = generator.GenerateNewPuzzle();

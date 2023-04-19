@@ -39,7 +39,7 @@ public class GeneratorJournalingService : IGeneratorJournalingService
         }
     };
 
-    public bool HasActiveTransaction => TransactionState != TransactionStates.ReadyForNewTransaction;
+    private bool HasActiveTransaction => TransactionState != TransactionStates.ReadyForNewTransaction;
 
     private readonly Stack<Transaction> TransactionJournal = new();
     private TransactionStates TransactionState = TransactionStates.ReadyForNewTransaction;

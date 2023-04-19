@@ -6,6 +6,8 @@ using Serilog.Events;
 using System.Diagnostics;
 using System.Reflection;
 using YASudoku.Models.PuzzleGenerators;
+using YASudoku.Models.PuzzleResolvers;
+using YASudoku.Models.PuzzleValidators;
 
 namespace YASudoku;
 
@@ -62,6 +64,8 @@ public static class MauiProgram
                     .SingleInstance();
 
                 containerBuilder.RegisterType<TraditionalGenerator>().As<IPuzzleGenerator>();
+                containerBuilder.RegisterType<DefaultValidator>().As<IPuzzleValidator>();
+                containerBuilder.RegisterType<DefaultResolver>().As<IPuzzleResolver>();
             } );
 
         builder.Logging.AddSerilog( dispose: true );

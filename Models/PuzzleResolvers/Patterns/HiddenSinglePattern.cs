@@ -7,7 +7,7 @@ public class HiddenSinglePattern : IResolverPattern
     /// Hidden single happens whenever a number can appear only in one possible place in a row/column/block.
     /// </summary>
     /// <inheritdoc />
-    public bool TryResolve( GameDataContainer gameData, out int resolvedCells, CancellationToken cancellationToken )
+    public bool TryResolve( GameDataContainer gameData, out int resolvedCells, CancellationToken? cancellationToken )
         => ResolverHelper.RunResolverRepeatedlyOnAllCollections( gameData, TryResolveCollection, out resolvedCells, cancellationToken );
 
     private static bool TryResolveCollection( GameGridCollection collection, out int resolvedCells )

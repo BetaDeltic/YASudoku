@@ -1,4 +1,6 @@
 ﻿using YASudoku.Common;
+using YASudoku.Models.PuzzleResolvers;
+using YASudoku.Models.PuzzleValidators;
 using YASudoku.Services.JournalingServices;
 
 namespace YASudoku.Models.PuzzleGenerators;
@@ -7,52 +9,77 @@ public class TraditionalGenerator : IPuzzleGenerator
 {
     private const int gridSize = 9;
 
-    private readonly IGeneratorJournalingService commandJournal;
+    private readonly IGeneratorJournalingService journal;
+    private readonly IPuzzleResolver resolver;
+    private readonly IPuzzleValidator validator;
     private readonly Random random = new();
 
     private bool isValid = true;
-    private CancellationTokenSource cancelSource = new();
 
     private GameDataContainer? gameData;
 
-    public TraditionalGenerator( IGeneratorJournalingService commandJournal )
+    private CancellationTokenSource _cancelSource;
+
+    private CancellationTokenSource CancelSource
     {
-        this.commandJournal = commandJournal;
+        get => _cancelSource;
+        set {
+            _cancelSource = value;
+            resolver.SetCancellationToken( _cancelSource.Token );
+        }
+    }
+
+    public TraditionalGenerator( IGeneratorJournalingService commandJournal, IPuzzleResolver puzzleResolver,
+        IPuzzleValidator puzzleValidator )
+    {
+        journal = commandJournal;
+        resolver = puzzleResolver;
+        validator = puzzleValidator;
+
+        CancelSource = new();
+
+        if ( _cancelSource == null ) throw new NullReferenceException( "Cancel source is null" );
     }
 
     public GameDataContainer GenerateNewPuzzle()
     {
-        gameData = new GameDataContainer( gridSize, commandJournal );
-        PuzzleValidators.DefaultValidator validator = new();
-        PuzzleResolvers.DefaultResolver puzzleResolver = new( cancelSource.Token );
-        gameData.InitializeCellCollections(
-            cellInitHandler: _ => CellActionHandler( validator ),
-            cellRemovedCandidateHandler: _ => CellActionHandler( validator ) );
+        InitializeGameDataContainer();
+        if ( gameData == null ) throw new ApplicationException( "Game Data Container is null" );
 
-        while ( !FillCellsWithNumbers( puzzleResolver ) ) {
+        while ( !FillCellsWithNumbers() ) {
             gameData.DebugPrintGeneratedPuzzle( "Failed to fill cells with numbers" );
             gameData.ResetContainer();
-            commandJournal.ClearJournal();
+            journal.ClearJournal();
         }
 
         SetCorrectValuesToFilledNumbers();
 
-        RemoveNumbersForViablePuzzle( puzzleResolver );
-
-        commandJournal.ClearJournal();
+        RemoveNumbersForViablePuzzle();
 
         return gameData;
     }
 
-    private void CellActionHandler( PuzzleValidators.DefaultValidator validator )
+    private void InitializeGameDataContainer()
     {
-        isValid = validator.IsValid( gameData! );
-        if ( !isValid ) {
-            cancelSource.Cancel();
+        if ( gameData == null ) {
+            gameData = new GameDataContainer( gridSize, journal );
+            gameData.InitializeCellCollections(
+                cellInitHandler: _ => CellActionHandler(),
+                cellRemovedCandidateHandler: _ => CellActionHandler() );
+        } else {
+            gameData.ResetContainer();
+            journal.ClearJournal();
+            CancelSource = new();
         }
     }
 
-    private bool FillCellsWithNumbers( PuzzleResolvers.DefaultResolver puzzleResolver )
+    private void CellActionHandler()
+    {
+        isValid = validator.IsValid( gameData! );
+        if ( !isValid ) CancelSource.Cancel();
+    }
+
+    private bool FillCellsWithNumbers()
     {
         foreach ( GameGridCell cell in gameData!.AllCells ) {
             if ( cell.IsInitialized ) continue;
@@ -60,36 +87,32 @@ public class TraditionalGenerator : IPuzzleGenerator
             bool isFilled = false;
             bool transactionReversed;
             do {
-                if ( cancelSource.IsCancellationRequested ) {
-                    cancelSource = new();
-                    puzzleResolver.ResetCancellationToken( cancelSource.Token );
-                }
+                if ( CancelSource.IsCancellationRequested ) CancelSource = new();
+
                 transactionReversed = false;
-                commandJournal.StartTransaction();
+                journal.StartTransaction();
                 cell.InitializeWithRandomCandidate( random );
                 if ( !isValid ) {
-                    if ( cell.CandidatesCount == 1 ) {
-                        return false;
-                    }
-                    commandJournal.ReverseTransaction();
+                    // cell has only one candidate left and it's not valid, meaning - it's not possible to fill the board with current setup
+                    if ( cell.CandidatesCount == 1 ) return false;
+
+                    journal.ReverseTransaction();
                     transactionReversed = true;
                     continue;
                 }
 
-                isFilled = puzzleResolver.TryResolve( gameData );
+                isFilled = resolver.TryResolve( gameData );
 
                 if ( isValid ) continue;
 
-                commandJournal.ReverseTransaction();
+                journal.ReverseTransaction();
                 transactionReversed = true;
             } while ( transactionReversed );
 
-            commandJournal.CommitTransaction();
-            gameData.DebugPrintGeneratedPuzzle( $"Generated so far:" );
+            journal.CommitTransaction();
+            gameData.DebugPrintGeneratedPuzzle( "Generated so far:" );
 
-            if ( isFilled ) {
-                break;
-            }
+            if ( isFilled ) break;
         }
         return true;
     }
@@ -97,7 +120,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     private void SetCorrectValuesToFilledNumbers()
         => gameData?.AllCells.ForEach( cell => cell.SetCorrectValueToUserFacingValue() );
 
-    private void RemoveNumbersForViablePuzzle( PuzzleResolvers.DefaultResolver puzzleResolver )
+    private void RemoveNumbersForViablePuzzle()
     {
         int cellsCount = gameData!.AllCells.Count;
         List<int> untouchedCellIndexes = new( Enumerable.Range( 0, cellsCount - 1 ) );
@@ -113,27 +136,23 @@ public class TraditionalGenerator : IPuzzleGenerator
 
             RecalculateCandidatesForRemovedNumbers( removedNumberCellIndexes );
 
-            if ( puzzleResolver.TryResolve( gameData ) ) {
+            if ( resolver.TryResolve( gameData ) ) {
                 CheckSolutionValidity( removedNumberCellIndexes );
                 removedNumberCellIndexes.Add( cellIndexToDelete );
             } else {
                 deletedValueCell.ResetUserFacingValueToCorrectValue();
             }
 
-            if ( !untouchedCellIndexes.Remove( cellIndexToDelete ) ) {
+            if ( !untouchedCellIndexes.Remove( cellIndexToDelete ) )
                 throw new ApplicationException( "Trying to delete wrong index." );
-            }
         }
 
-        if ( !removedNumberCellIndexes.Any() ) {
-            throw new ApplicationException( "Didn't delete anything" );
-        }
+        if ( !removedNumberCellIndexes.Any() ) throw new ApplicationException( "Didn't delete anything" );
 
         RemoveValuesFromCellsOnList( removedNumberCellIndexes );
         RecalculateCandidatesForRemovedNumbers( removedNumberCellIndexes );
-        if ( !puzzleResolver.TryResolve( gameData ) ) {
+        if ( !resolver.TryResolve( gameData ) )
             throw new ApplicationException( "Resolver is unable to solve it on second attempt." );
-        }
         CheckSolutionValidity( removedNumberCellIndexes );
 
         RemoveValuesFromCellsOnList( removedNumberCellIndexes );
@@ -159,14 +178,11 @@ public class TraditionalGenerator : IPuzzleGenerator
     {
         removedNumberCellIndexes.ForEach( index => {
             GameGridCell currentCell = gameData!.AllCells[ index ];
-            if ( !currentCell.HasCorrectValue ) {
+            if ( !currentCell.HasCorrectValue )
                 throw new ApplicationException( $"Resolver did bad, cell #{currentCell.CellID}, resolver value: {currentCell.UserFacingValue}" );
-            }
         } );
         gameData!.AllCells.ForEach( cell => {
-            if ( !cell.HasUserFacingValue ) {
-                throw new ApplicationException( "Resolver didn't resolve everything." );
-            }
+            if ( !cell.HasUserFacingValue ) throw new ApplicationException( "Resolver didn't resolve everything." );
         } );
     }
 

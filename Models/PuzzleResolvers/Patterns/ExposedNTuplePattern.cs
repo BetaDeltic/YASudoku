@@ -10,7 +10,7 @@ public class ExposedNTuplePattern : IResolverPattern
     /// </summary>
     /// <returns>true in case there are no uninitiated cells to be resolved.
     /// false otherwise</returns>
-    public bool TryResolve( GameDataContainer gameData, out int affectedCells, CancellationToken cancellationToken )
+    public bool TryResolve( GameDataContainer gameData, out int affectedCells, CancellationToken? cancellationToken )
         => ResolverHelper.RunResolverRepeatedlyOnAllCollections( gameData, TryResolveCollection, out affectedCells, cancellationToken );
 
     private static bool TryResolveCollection( GameGridCollection collection, out int affectedCells )

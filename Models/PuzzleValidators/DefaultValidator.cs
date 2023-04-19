@@ -2,7 +2,7 @@
 
 namespace YASudoku.Models.PuzzleValidators;
 
-public class DefaultValidator
+public class DefaultValidator : IPuzzleValidator
 {
     private readonly List<IValidatorPattern> ValidatorPatterns = new();
 

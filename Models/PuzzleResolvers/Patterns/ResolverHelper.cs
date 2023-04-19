@@ -5,7 +5,7 @@ public static class ResolverHelper
     public delegate bool ResolverFunc( GameGridCollection collection, out int resolved );
 
     public static bool RunResolverRepeatedlyOnAllCollections(
-        GameDataContainer gameData, ResolverFunc func, out int totalResolved, CancellationToken cancellationToken )
+        GameDataContainer gameData, ResolverFunc func, out int totalResolved, CancellationToken? cancellationToken )
     {
         totalResolved = 0;
         bool success;
@@ -27,9 +27,9 @@ public static class ResolverHelper
     }
 
     private static void RunOverCollection( ResolverFunc func, GameGridCollection collection, ref int totalResolved,
-        ref bool success, ref int resolvedInThisCycle, CancellationToken cancellationToken )
+        ref bool success, ref int resolvedInThisCycle, CancellationToken? cancellationToken )
     {
-        if ( cancellationToken.IsCancellationRequested )
+        if ( cancellationToken?.IsCancellationRequested == true )
             return;
 
         if ( !func( collection, out int resolved ) ) {
