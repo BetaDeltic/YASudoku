@@ -1,6 +1,6 @@
 ﻿using Moq;
 using YASudoku.Common;
-using YASudoku.Models.PuzzleGenerator;
+using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Services.JournalingServices;
 using YASudoku.ViewModels.GameViewModel;
 using YASudoku.ViewModels.GameViewModel.VisualStates;

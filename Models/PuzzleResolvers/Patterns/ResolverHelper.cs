@@ -1,4 +1,4 @@
-﻿namespace YASudoku.Models.PuzzleResolver.Patterns;
+﻿namespace YASudoku.Models.PuzzleResolvers.Patterns;
 
 public static class ResolverHelper
 {

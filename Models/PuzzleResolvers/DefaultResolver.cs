@@ -1,14 +1,14 @@
-﻿using YASudoku.Models.PuzzleResolver.Patterns;
+﻿using YASudoku.Models.PuzzleResolvers.Patterns;
 
-namespace YASudoku.Models.PuzzleResolver;
+namespace YASudoku.Models.PuzzleResolvers;
 
-public class PuzzleResolver
+public class DefaultResolver
 {
     private readonly List<IResolverPattern> ResolverPatterns = new();
 
     private CancellationToken cancellationToken;
 
-    public PuzzleResolver( CancellationToken cancellationToken )
+    public DefaultResolver( CancellationToken cancellationToken )
     {
         ResolverPatterns.Add( new SingleCandidatePattern() );
         ResolverPatterns.Add( new HiddenSinglePattern() );

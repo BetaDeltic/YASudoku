@@ -1,6 +1,6 @@
 ﻿using YASudoku.Common;
 
-namespace YASudoku.Models.PuzzleResolver.Patterns;
+namespace YASudoku.Models.PuzzleResolvers.Patterns;
 
 public class SingleCandidatePattern : IResolverPattern
 {

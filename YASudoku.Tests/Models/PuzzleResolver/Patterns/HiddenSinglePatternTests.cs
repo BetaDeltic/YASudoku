@@ -1,5 +1,5 @@
 ﻿using YASudoku.Models;
-using YASudoku.Models.PuzzleResolver.Patterns;
+using YASudoku.Models.PuzzleResolvers.Patterns;
 
 namespace YASudoku.Tests.Models.PuzzleResolver.Patterns;
 

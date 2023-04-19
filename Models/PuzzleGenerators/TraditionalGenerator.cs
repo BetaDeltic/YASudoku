@@ -24,7 +24,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     {
         gameData = new GameDataContainer( gridSize, commandJournal );
         PuzzleValidator.PuzzleValidator validator = new();
-        PuzzleResolver.PuzzleResolver puzzleResolver = new( cancelSource.Token );
+        PuzzleResolvers.DefaultResolver puzzleResolver = new( cancelSource.Token );
         gameData.InitializeCellCollections(
             cellInitHandler: _ => CellActionHandler( validator ),
             cellRemovedCandidateHandler: _ => CellActionHandler( validator ) );
@@ -52,7 +52,7 @@ public class TraditionalGenerator : IPuzzleGenerator
         }
     }
 
-    private bool FillCellsWithNumbers( PuzzleResolver.PuzzleResolver puzzleResolver )
+    private bool FillCellsWithNumbers( PuzzleResolvers.DefaultResolver puzzleResolver )
     {
         foreach ( GameGridCell cell in gameData!.AllCells ) {
             if ( cell.IsInitialized ) continue;
@@ -97,7 +97,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     private void SetCorrectValuesToFilledNumbers()
         => gameData?.AllCells.ForEach( cell => cell.SetCorrectValueToUserFacingValue() );
 
-    private void RemoveNumbersForViablePuzzle( PuzzleResolver.PuzzleResolver puzzleResolver )
+    private void RemoveNumbersForViablePuzzle( PuzzleResolvers.DefaultResolver puzzleResolver )
     {
         int cellsCount = gameData!.AllCells.Count;
         List<int> untouchedCellIndexes = new( Enumerable.Range( 0, cellsCount - 1 ) );
