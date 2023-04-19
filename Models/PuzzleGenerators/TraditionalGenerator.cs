@@ -1,7 +1,7 @@
 ﻿using YASudoku.Common;
 using YASudoku.Services.JournalingServices;
 
-namespace YASudoku.Models.PuzzleGenerator;
+namespace YASudoku.Models.PuzzleGenerators;
 
 public class TraditionalGenerator : IPuzzleGenerator
 {

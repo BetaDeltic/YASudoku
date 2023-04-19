@@ -1,4 +1,4 @@
-﻿namespace YASudoku.Models.PuzzleGenerator;
+﻿namespace YASudoku.Models.PuzzleGenerators;
 
 public interface IPuzzleGenerator
 {

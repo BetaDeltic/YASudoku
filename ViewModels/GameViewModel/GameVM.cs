@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using YASudoku.Models;
-using YASudoku.Models.PuzzleGenerator;
+using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Services.JournalingServices;
 using YASudoku.Services.SettingsService;
 using YASudoku.ViewModels.GameViewModel.Commands;

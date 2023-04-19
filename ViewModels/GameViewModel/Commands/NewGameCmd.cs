@@ -1,5 +1,5 @@
 ﻿using YASudoku.Models;
-using YASudoku.Models.PuzzleGenerator;
+using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Services.JournalingServices;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
 

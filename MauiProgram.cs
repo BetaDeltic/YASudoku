@@ -5,7 +5,7 @@ using Serilog;
 using Serilog.Events;
 using System.Diagnostics;
 using System.Reflection;
-using YASudoku.Models.PuzzleGenerator;
+using YASudoku.Models.PuzzleGenerators;
 
 namespace YASudoku;
 
