@@ -110,8 +110,9 @@ public class VisualStatesHandler : IDisposable
         GameGridVS.DeselectCell();
         GameGridVS.UnhighlightCellsWithSameNumber();
 
-        if ( IsPencilActive )
-            PencilVS.DeactivateButton();
+        if ( IsPencilActive ) PencilVS.DeactivateButton();
+
+        if ( IsEraserActive ) EraserVS.DeactivateButton();
     }
 
     public void StartGame()
