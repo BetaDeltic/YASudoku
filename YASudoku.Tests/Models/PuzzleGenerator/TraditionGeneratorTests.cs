@@ -9,7 +9,6 @@ namespace YASudoku.Tests.Models.PuzzleGenerator;
 public class TraditionGeneratorTests
 {
     public const int gridSize = 9;
-    public TraditionalGenerator? generator;
 
     [Fact( Skip = "To be run only manually, takes multiple minutes to finish" )]
     //[Fact]
@@ -21,13 +20,13 @@ public class TraditionGeneratorTests
     }
 
     [Fact]
-    public void CanGenerateOneResolvablePuzzle() => AssertGeneratorCanGenerateOneResolvablePuzzle( 0 );
+    public void CanGenerateOneResolvablePuzzle() => AssertGeneratorCanGenerateOneResolvablePuzzle();
 
-    private void AssertGeneratorCanGenerateOneResolvablePuzzle( int puzzleIndex = 0 )
+    private static void AssertGeneratorCanGenerateOneResolvablePuzzle( int puzzleIndex = 0 )
     {
         // Arrange
         DefaultResolver puzzleResolver = new();
-        generator = new( new GeneratorJournalingService(), puzzleResolver, new DefaultValidator() );
+        TraditionalGenerator generator = new( new GeneratorJournalingService(), puzzleResolver, new DefaultValidator() );
 
         // Act
         GameDataContainer gameData = generator.GenerateNewPuzzle();
