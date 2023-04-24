@@ -53,8 +53,6 @@ public partial class TimerVisualState : ObservableObject, IDisposable
 
     public void StopTimerAndSetTextToZero()
     {
-        if ( timer == null ) return;
-
         SetTimerToZero();
 
         StopAndDisposeTimer();

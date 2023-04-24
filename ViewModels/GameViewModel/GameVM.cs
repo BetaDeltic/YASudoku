@@ -66,7 +66,7 @@ public partial class GameVM : VMsBase, IDisposable
         restartGameCmd = new( VisualState, journal );
         pauseGameCmd = new( VisualState );
         settingsCmd = new( VisualState.SettingsVS );
-        undoCmd = new( journal );
+        undoCmd = new( journal, VisualState );
 
         VisualState.UpdateAllButtonRemainingCounts();
     }
