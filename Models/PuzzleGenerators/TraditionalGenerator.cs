@@ -29,8 +29,7 @@ public class TraditionalGenerator : IPuzzleGenerator
         }
     }
 
-    public TraditionalGenerator( IGeneratorJournalingService commandJournal, IPuzzleResolver puzzleResolver,
-        IPuzzleValidator puzzleValidator )
+    public TraditionalGenerator( IGeneratorJournalingService commandJournal, IPuzzleResolver puzzleResolver, IPuzzleValidator puzzleValidator )
     {
         journal = commandJournal;
         resolver = puzzleResolver;
@@ -161,18 +160,10 @@ public class TraditionalGenerator : IPuzzleGenerator
     }
 
     private void RemoveValuesFromCellsOnList( List<int> removedNumberCellIndexes )
-    {
-        removedNumberCellIndexes.ForEach( index => {
-            gameData!.AllCells[ index ].RemoveUserFacingValue();
-        } );
-    }
+        => removedNumberCellIndexes.ForEach( index => gameData!.AllCells[ index ].RemoveUserFacingValue() );
 
     private void RecalculateCandidatesForRemovedNumbers( List<int> removedNumberCellIndexes )
-    {
-        removedNumberCellIndexes.ForEach( index => {
-            gameData!.AllCells[ index ].RecalculateCandidates();
-        } );
-    }
+        => removedNumberCellIndexes.ForEach( index => gameData!.AllCells[ index ].RecalculateCandidates() );
 
     private void CheckSolutionValidity( List<int> removedNumberCellIndexes )
     {
