@@ -88,15 +88,16 @@ public partial class GameVM : VMsBase, IDisposable
 
     public void OnAnimationEnded( AnimationTypes animationType )
     {
-        isAnimationRunningSubject.OnNext( false );
-
         if ( animationType == AnimationTypes.AbortingGame ) {
             VisualState?.WipingGameBoardCompleted.OnNext( Unit.Default );
+            return; // Aborting animation is a composite animation, so we don't want to set the animation running to false
         }
 
-        if ( animationType == AnimationTypes.NewGame ) {
+        else if ( animationType == AnimationTypes.NewGame ) {
             VisualState?.StartingNewGameCompleted.OnNext( Unit.Default );
         }
+
+        isAnimationRunningSubject.OnNext( false );
     }
 
     [RelayCommand]

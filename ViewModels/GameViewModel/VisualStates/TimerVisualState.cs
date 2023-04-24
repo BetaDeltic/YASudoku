@@ -24,8 +24,10 @@ public partial class TimerVisualState : ObservableObject, IDisposable
         timer = new( TimeSpan.FromSeconds( 1 ) ) { AutoReset = true };
 
         TimeSpan gracePeriod = TimeSpan.FromSeconds( 1 ); // Give player a chance to look around a bit
-        await Task.Delay( gracePeriod ).ContinueWith( _ => timer.Start() );
+        await Task.Delay( gracePeriod ).ContinueWith( _ => timer?.Start() );
 
+        // Needs a null check because the timer could have been destroyed before the delay finished
+        if ( timer == null ) return;
         timer.Elapsed += Timer_Elapsed;
     }
 
@@ -61,9 +63,11 @@ public partial class TimerVisualState : ObservableObject, IDisposable
     public void StopAndDisposeTimer()
     {
         if ( timer == null ) return;
+
         timer.Stop();
         timer.Elapsed -= Timer_Elapsed;
         timer.Dispose();
+        timer = null;
     }
 
     public void UnpauseTimer() => timer?.Start();
