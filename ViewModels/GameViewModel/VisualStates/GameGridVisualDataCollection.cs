@@ -51,8 +51,6 @@ public class GameGridVisualDataCollection
 
     public void ForEach( Action<GameGridCellVisualData> action ) => visualCells.ForEach( action );
 
-    internal int IndexOf( GameGridCellVisualData cell ) => visualCells.IndexOf( cell );
-
     internal IEnumerable<TOutput> Select<TOutput>( Func<GameGridCellVisualData, int, TOutput> func )
         => visualCells.Select( func );
 
