@@ -22,10 +22,10 @@ public partial class MainVM : VMsBase
         await Shell.Current.GoToAsync( nameof( LoadingPage ) );
 
         GameVM? gameVM = serviceProvider.GetService<GameVM>();
-        await Task.WhenAll( new[] { // To prevent loading screen from flashing in case of too fast load
+        await Task.WhenAll( // To prevent loading screen from flashing in case of too fast load
             Task.Delay( 1000 ), // Wait for at least a second
             Task.Run(() => gameVM?.PrepareGameView( generateNew )) // While simultaneously preparing the board
-        } );
+        );
 
         await Shell.Current.GoToAsync( nameof( GamePage ) );
     }
