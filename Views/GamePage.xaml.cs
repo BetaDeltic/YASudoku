@@ -3,6 +3,7 @@ using YASudoku.ViewModels.GameViewModel;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
 using YASudoku.Controls;
 using YASudoku.Views.Special;
+using System.Reactive.Linq;
 
 namespace YASudoku.Views;
 
@@ -40,7 +41,8 @@ public partial class GamePage : ContentPage
         TimerLbl.SetBinding( Label.TextProperty, new Binding( nameof( TimerVisualState.TimerText ), source: gameVM.VisualState.TimerVS ) );
 
         gameVM.VisualState.Victory += GameVM_Victory;
-        gameVM.VisualState.NewGameAfterFinishedOne += GameVM_NewGameAfterFinishedOne;
+        gameVM.VisualState.SignalWhenWipingGameBoard.Subscribe( _ => RunAbortedGameAnimation() );
+        gameVM.VisualState.SignalWhenStartingNewGame.Subscribe( _ => RunStartingNewGameAnimation() );
 
         PropertyChanged += GamePage_PropertyChanged;
         Appearing += GamePage_Appearing;
@@ -220,8 +222,6 @@ public partial class GamePage : ContentPage
     }
 
     private void GameVM_Victory() => RunVictoryAnimation();
-
-    private void GameVM_NewGameAfterFinishedOne() => RunNewGameAnimation();
 
     private void GamePage_Appearing( object? sender, EventArgs e ) => gameVM.OnPageAppearing();
 

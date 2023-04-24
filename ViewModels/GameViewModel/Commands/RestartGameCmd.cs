@@ -1,24 +1,20 @@
-﻿using YASudoku.ViewModels.GameViewModel.VisualStates;
+﻿using YASudoku.Services.JournalingServices;
+using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public class RestartGameCmd
+public class RestartGameCmd : GameCommandsBase
 {
-    private readonly VisualStatesHandler visualState;
+    public RestartGameCmd( VisualStatesHandler visualState, IPlayerJournalingService journalingService )
+        : base( visualState, journalingService ) { }
 
-    public RestartGameCmd( VisualStatesHandler visualState )
+    public async void RestartGame( bool previousGameAborted )
     {
-        this.visualState = visualState;
-    }
-
-    public void RestartGame()
-    {
-        visualState.ResetVisualStatesToDefault();
+        if ( previousGameAborted ) await EndRunningGame();
 
         visualState.GameData.RestartCellValues();
-
         visualState.UpdateAllButtonRemainingCounts();
 
-        visualState.PrepareUIForNewGame();
+        await StartNewGame();
     }
 }

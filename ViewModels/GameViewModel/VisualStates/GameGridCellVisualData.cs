@@ -297,11 +297,16 @@ public class GameGridCellVisualData : INotifyPropertyChanged
         highlightedCandidate = 0;
     }
 
-    public void RestartValue()
+    public void RestartCell()
     {
         if ( IsLockedForChanges ) return;
 
         UserFacingValue = 0;
+
+        UnhighlightCell();
+        DisplayValue();
+
+        ResetGridProperties();
     }
 
     public void RevealValues()

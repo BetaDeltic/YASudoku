@@ -1,4 +1,6 @@
-﻿using YASudoku.Common;
+﻿using System.Reactive;
+using System.Reactive.Subjects;
+using YASudoku.Common;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
@@ -9,7 +11,11 @@ public class VisualStatesHandler : IDisposable
 {
     public event Action? Victory;
     public event Action? NewGameData;
-    public event Action? NewGameAfterFinishedOne;
+
+    public readonly Subject<Unit> SignalWhenWipingGameBoard = new();
+    public readonly Subject<Unit> WipingGameBoardCompleted = new();
+    public readonly Subject<Unit> SignalWhenStartingNewGame = new();
+    public readonly Subject<Unit> StartingNewGameCompleted = new();
 
     public readonly GameGridVisualState GameGridVS;
     public readonly CommonButtonVisualState PencilVS;
@@ -20,6 +26,8 @@ public class VisualStatesHandler : IDisposable
     public readonly TimerVisualState TimerVS = new();
     public readonly SettingsVisualState SettingsVS = new();
 
+    private GameGridVisualDataCollection? _gamedata;
+
     public GameGridVisualDataCollection GameData
     {
         get => _gamedata!;
@@ -28,8 +36,6 @@ public class VisualStatesHandler : IDisposable
             NewGameData?.Invoke();
         }
     }
-
-    private GameGridVisualDataCollection? _gamedata;
 
     public GameGridCellVisualData? SelectedCell => GameGridVS.SelectedCell;
     public NumPadButton? SelectedNumber => NumPadVS.SelectedButton;
@@ -40,7 +46,7 @@ public class VisualStatesHandler : IDisposable
     public bool IsEraserActive => EraserVS.IsActive;
     public bool IsPaused => PauseVS.IsActive;
 
-    public GameStates CurrentGameState = GameStates.Starting;
+    public GameStates CurrentGameState { get; private set; } = GameStates.Starting;
 
     private readonly int gridSize;
 
@@ -83,39 +89,15 @@ public class VisualStatesHandler : IDisposable
         if ( !recentlyChangedCell.HasCorrectValue || ThereAreEmptyCells() || ThereAreIncorrectCells() ) return;
 
         CurrentGameState = GameStates.Finished;
-        TimerVS.StopTimer();
+        TimerVS.StopAndDisposeTimer();
         Victory?.Invoke();
     }
 
-    private bool ThereAreEmptyCells()
-        => GameData.Any( cell => !cell.HasUserFacingValue );
+    private bool ThereAreEmptyCells() => GameData.Any( cell => !cell.HasUserFacingValue );
 
-    private bool ThereAreIncorrectCells()
-        => GameData.Any( cell => cell.HasUserFacingValue && !cell.HasCorrectValue );
+    private bool ThereAreIncorrectCells() => GameData.Any( cell => !cell.HasCorrectValue );
 
-    private void VisualStatesHandler_NewGameData()
-        => GameGridVS.ChangeCellData( GameData );
-
-    public void StartGame()
-    {
-        TimerVS.StartTimer();
-        CurrentGameState = GameStates.Running;
-    }
-
-    public void UpdateAllButtonRemainingCounts()
-        => Enumerable.Range( 1, gridSize ).ForEach( UpdateButtonRemainingCount );
-
-    public void UpdateButtonRemainingCount( int buttonNumber )
-    {
-        if ( buttonNumber <= 0 ) {
-            return;
-        }
-
-        int numberCount = GameGridVS.GetCellsWithSameNumber( buttonNumber ).Count();
-        int remainingCount = gridSize - numberCount;
-
-        NumPadVS.UpdateButtonRemainingCount( buttonNumber, remainingCount );
-    }
+    private void VisualStatesHandler_NewGameData() => GameGridVS.ChangeCellData( GameData );
 
     public void ResetVisualStatesToDefault()
     {
@@ -132,12 +114,23 @@ public class VisualStatesHandler : IDisposable
             PencilVS.DeactivateButton();
     }
 
-    public void PrepareUIForNewGame()
+    public void StartGame()
     {
-        if ( CurrentGameState == GameStates.Finished ) {
-            NewGameAfterFinishedOne?.Invoke();
+        TimerVS.StartTimer();
+        CurrentGameState = GameStates.Running;
+    }
+
+    public void UpdateAllButtonRemainingCounts() => Enumerable.Range( 1, gridSize ).ForEach( UpdateButtonRemainingCount );
+
+    public void UpdateButtonRemainingCount( int buttonNumber )
+    {
+        if ( buttonNumber <= 0 ) {
+            return;
         }
 
-        StartGame();
+        int numberCount = GameGridVS.GetCellsWithSameNumber( buttonNumber ).Count();
+        int remainingCount = gridSize - numberCount;
+
+        NumPadVS.UpdateButtonRemainingCount( buttonNumber, remainingCount );
     }
 }

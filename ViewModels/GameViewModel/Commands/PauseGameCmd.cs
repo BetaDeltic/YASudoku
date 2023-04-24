@@ -16,7 +16,7 @@ public class PauseGameCmd
         bool pause = !visualState.IsPaused;
 
         if ( pause ) {
-            visualState.TimerVS.StopTimer();
+            visualState.TimerVS.PauseTimer();
             visualState.PauseVS.ActivateButton();
             visualState.NumPadVS.DeselectCurrentNumber();
             visualState.GameGridVS.DeselectCell();

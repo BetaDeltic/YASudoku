@@ -1,4 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using YASudoku.Models;
 using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Services.JournalingServices;
@@ -16,8 +19,6 @@ public partial class GameVM : VMsBase, IDisposable
     private readonly IPlayerJournalingService journal;
     public readonly IServiceProvider serviceProvider;
 
-    public VisualStatesHandler? VisualState { get; private set; }
-
     private SwitchPenAndPencilCmd? switchPenAndPencilCmd;
     private PressNumberCmd? pressNumberCmd;
     private SelectEraserCmd? selectEraserCmd;
@@ -27,6 +28,11 @@ public partial class GameVM : VMsBase, IDisposable
     private PauseGameCmd? pauseGameCmd;
     private SettingsCmd? settingsCmd;
     private UndoCmd? undoCmd;
+
+    public VisualStatesHandler? VisualState { get; private set; }
+
+    private readonly BehaviorSubject<bool> isAnimationRunningSubject = new( false );
+    public IObservable<bool> IsAnimationRunning => isAnimationRunningSubject.AsObservable();
 
     public GameVM( IPuzzleGenerator puzzleGenerator, ISettingsService settingsService, IServiceProvider serviceProvider,
         IPlayerJournalingService journalingService )
@@ -57,7 +63,7 @@ public partial class GameVM : VMsBase, IDisposable
         selectCellCmd = new( VisualState );
         selectEraserCmd = new( VisualState );
         newGameCmd = new( VisualState, generator, journal );
-        restartGameCmd = new( VisualState );
+        restartGameCmd = new( VisualState, journal );
         pauseGameCmd = new( VisualState );
         settingsCmd = new( VisualState.SettingsVS );
         undoCmd = new( journal );
@@ -74,35 +80,69 @@ public partial class GameVM : VMsBase, IDisposable
             PuzzleLoader loader = new();
             gameData = generator.GenerateNewPuzzle();
         }
+
         return gameData;
     }
 
-    [RelayCommand]
-    public void StartNewGame() => newGameCmd?.NewGame();
+    public void OnAnimationStarted() => isAnimationRunningSubject.OnNext( true );
+
+    public void OnAnimationEnded( AnimationTypes animationType )
+    {
+        isAnimationRunningSubject.OnNext( false );
+
+        if ( animationType == AnimationTypes.AbortingGame ) {
+            VisualState?.WipingGameBoardCompleted.OnNext( Unit.Default );
+        }
+
+        if ( animationType == AnimationTypes.NewGame ) {
+            VisualState?.StartingNewGameCompleted.OnNext( Unit.Default );
+        }
+    }
 
     [RelayCommand]
-    public void RestartGame() => restartGameCmd?.RestartGame();
+    public void StartNewGame()
+    {
+        bool abortingGame = VisualState?.CurrentGameState == GameStates.Running;
+        ExecuteIfNotInRunningAnimation( () => newGameCmd?.NewGame( abortingGame ) );
+    }
 
     [RelayCommand]
-    public void PauseGame() => pauseGameCmd?.TogglePausedState();
+    public void RestartGame()
+    {
+        bool abortingGame = VisualState?.CurrentGameState == GameStates.Running;
+        ExecuteIfNotInRunningAnimation( () => restartGameCmd?.RestartGame( abortingGame ) );
+    }
 
     [RelayCommand]
-    public void SwitchPenAndPencil() => switchPenAndPencilCmd?.SwitchPenAndPencil();
+    public void PauseGame() => ExecuteIfNotInRunningAnimation( () => pauseGameCmd?.TogglePausedState() );
 
     [RelayCommand]
-    public void PressNumber( int pressedNumber ) => pressNumberCmd?.PressNumber( pressedNumber );
+    public void SwitchPenAndPencil()
+        => ExecuteIfNotInRunningAnimation( () => switchPenAndPencilCmd?.SwitchPenAndPencil() );
 
     [RelayCommand]
-    public void SelectEraser() => selectEraserCmd?.SelectEraser();
+    public void PressNumber( int pressedNumber )
+        => ExecuteIfNotInRunningAnimation( () => pressNumberCmd?.PressNumber( pressedNumber ) );
 
     [RelayCommand]
-    public void SelectCell( int selectedCellIndex ) => selectCellCmd?.SelectCell( selectedCellIndex );
+    public void SelectEraser() => ExecuteIfNotInRunningAnimation( () => selectEraserCmd?.SelectEraser() );
 
     [RelayCommand]
-    public void OpenSettings() => settingsCmd?.OpenSettings();
+    public void SelectCell( int selectedCellIndex )
+        => ExecuteIfNotInRunningAnimation( () => selectCellCmd?.SelectCell( selectedCellIndex ) );
 
     [RelayCommand]
-    public void UndoLastAction() => undoCmd?.UndoLastActionInJournal();
+    public void OpenSettings() => ExecuteIfNotInRunningAnimation( () => settingsCmd?.OpenSettings() );
+
+    [RelayCommand]
+    public void UndoLastAction() => ExecuteIfNotInRunningAnimation( () => undoCmd?.UndoLastActionInJournal() );
+
+    private async void ExecuteIfNotInRunningAnimation( Action action )
+    {
+        if ( await IsAnimationRunning.FirstAsync() ) return;
+
+        action();
+    }
 
     public void OnPageAppearing() => VisualState?.StartGame();
 }

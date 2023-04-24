@@ -5,32 +5,27 @@ using YASudoku.ViewModels.GameViewModel.VisualStates;
 
 namespace YASudoku.ViewModels.GameViewModel.Commands;
 
-public class NewGameCmd
+public class NewGameCmd : GameCommandsBase
 {
     private readonly IPuzzleGenerator generator;
-    private readonly IPlayerJournalingService journal;
-    private readonly VisualStatesHandler visualState;
 
     public NewGameCmd( VisualStatesHandler visualState, IPuzzleGenerator puzzleGenerator,
-        IPlayerJournalingService journalingService )
+        IPlayerJournalingService journalingService ) : base( visualState, journalingService )
     {
-        this.visualState = visualState;
-        journal = journalingService;
-        generator = puzzleGenerator;
+        generator = puzzleGenerator; 
     }
 
-    public void NewGame()
+    public async void NewGame( bool previousGameAborted )
     {
-        visualState.TimerVS.StopTimer();
+        if ( previousGameAborted ) await EndRunningGame();
+        await GenerateAndReplaceGameData();
+        await StartNewGame();
+    }
 
-        visualState.ResetVisualStatesToDefault();
-
-        journal.ClearJournal();
-
-        GameDataContainer newGameData = generator.GenerateNewPuzzle();
+    public async Task GenerateAndReplaceGameData()
+    {
+        GameDataContainer newGameData = await Task.Run( () => generator.GenerateNewPuzzle() );
         visualState.GameData.ReplaceCollection( newGameData.AllCells );
         visualState.UpdateAllButtonRemainingCounts();
-
-        visualState.PrepareUIForNewGame();
     }
 }

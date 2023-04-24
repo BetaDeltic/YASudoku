@@ -17,30 +17,54 @@ public partial class TimerVisualState : ObservableObject, IDisposable
         GC.SuppressFinalize( this );
     }
 
-    public void StartTimer()
+    public async void StartTimer()
+    {
+        StopTimerAndSetTextToZero();
+
+        timer = new( TimeSpan.FromSeconds( 1 ) ) { AutoReset = true };
+
+        TimeSpan gracePeriod = TimeSpan.FromSeconds( 1 ); // Give player a chance to look around a bit
+        await Task.Delay( gracePeriod ).ContinueWith( _ => timer.Start() );
+
+        timer.Elapsed += Timer_Elapsed;
+    }
+
+    private void SetTimerToZero()
     {
         totalElapsedTime = 0;
-        if ( timer != null ) {
-            timer.Stop();
-            timer.Elapsed -= Timer_Elapsed;
-            timer.Dispose();
-        }
-
-        timer = new( TimeSpan.FromSeconds( 1 ) ) {
-            AutoReset = true,
-            Enabled = true,
-        };
-        timer.Elapsed += Timer_Elapsed;
+        SetTimerToElapsed();
     }
 
     private void Timer_Elapsed( object? sender, System.Timers.ElapsedEventArgs e )
     {
         totalElapsedTime++;
+        SetTimerToElapsed();
+    }
+
+    private void SetTimerToElapsed()
+    {
         TimeSpan elapsedTimeSpan = TimeSpan.FromSeconds( totalElapsedTime );
         TimerText = elapsedTimeSpan.ToString( @"mm\:ss" );
     }
 
-    public void UnpauseTimer() => timer?.Start();
+    public void PauseTimer() => timer?.Stop();
 
-    public void StopTimer() => timer?.Stop();
+    public void StopTimerAndSetTextToZero()
+    {
+        if ( timer == null ) return;
+
+        SetTimerToZero();
+
+        StopAndDisposeTimer();
+    }
+
+    public void StopAndDisposeTimer()
+    {
+        if ( timer == null ) return;
+        timer.Stop();
+        timer.Elapsed -= Timer_Elapsed;
+        timer.Dispose();
+    }
+
+    public void UnpauseTimer() => timer?.Start();
 }

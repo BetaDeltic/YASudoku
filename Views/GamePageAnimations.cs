@@ -1,4 +1,5 @@
 ﻿using YASudoku.Controls;
+using YASudoku.ViewModels.GameViewModel;
 
 namespace YASudoku.Views;
 
@@ -7,30 +8,56 @@ public partial class GamePage
     private readonly TimeSpan minAnimationSpan = TimeSpan.FromMilliseconds( 500 );
     private readonly TimeSpan maxAnimationSpan = TimeSpan.FromMilliseconds( 1000 );
 
-    private static void ReturnElementToOriginalPositionAndScale( VisualElement element, TimeSpan animationLength )
+    private void RunVictoryAnimation()
+        => RunAnimationAndNotifyGameVM( RunVictoryAnimationAsync, AnimationTypes.Victory );
+    private void RunStartingNewGameAnimation()
+        => RunAnimationAndNotifyGameVM( RunStartingNewGameAnimationAsync, AnimationTypes.NewGame );
+    private void RunAbortedGameAnimation()
+        => RunAnimationAndNotifyGameVM( RunAbortGameAnimationAsync, AnimationTypes.AbortingGame );
+
+    private async void RunAnimationAndNotifyGameVM( Func<Task> animation, AnimationTypes animationType )
     {
-        element.ScaleTo( 1, (uint)animationLength.TotalMilliseconds );
-        element.TranslateTo( 0, 0, (uint)animationLength.TotalMilliseconds );
+        gameVM.OnAnimationStarted();
+        await animation();
+        gameVM.OnAnimationEnded( animationType );
     }
 
-    private async void RunVictoryAnimation()
+    private async Task RunVictoryAnimationAsync()
     {
-        _ = Dispatcher.DispatchAsync( () => RunAnimationOnAllCellsAtRandomOrder( BlackHoleAnimation ) );
-        _ = Dispatcher.DispatchAsync( MoveIrrelevantButtonsAwayAfterVictory );
-        await Task.Delay( maxAnimationSpan );
-        _ = Dispatcher.DispatchAsync( MoveTimerToVictoryPosition );
-        _ = Dispatcher.DispatchAsync( MoveRelevantButtonsBelowTimerAfterVictory );
+        await Task.WhenAll(
+            RunAnimationOnAllCellsAtRandomOrderAsync( BlackHoleAnimationAsync ),
+            MoveIrrelevantButtonsAwayAfterVictoryAsync()
+        );
+        await Task.WhenAll(
+            MoveTimerToVictoryPositionAsync(),
+            MoveRelevantButtonsBelowTimerAfterVictoryAsync()
+        );
     }
 
-    private async void RunNewGameAnimation()
+    private async Task RunStartingNewGameAnimationAsync()
     {
-        await ResetPageElementsPosition();
-        RunAnimationOnAllCellsAtRandomOrder( ReturnElementToOriginalPositionAndScale );
+        await Task.WhenAll(
+            ResetPageElementsPositionAsync(),
+            RunAnimationOnAllCellsAtRandomOrderAsync( ReturnElementToOriginalPositionAndScaleAsync )
+        );
     }
 
-    private void RunAnimationOnAllCellsAtRandomOrder( Action<LabelOrNumberedGrid, TimeSpan> animation )
+    private async Task RunAbortGameAnimationAsync()
+        => await RunAnimationOnAllCellsAtRandomOrderAsync( BlackHoleAnimationAsync );
+
+    private static async Task ReturnElementToOriginalPositionAndScaleAsync( VisualElement element, TimeSpan animationLength )
+    {
+        await Task.WhenAll(
+            element.ScaleTo( 1, (uint)animationLength.TotalMilliseconds ),
+            element.TranslateTo( 0, 0, (uint)animationLength.TotalMilliseconds ),
+            element.FadeTo( 1, (uint)animationLength.TotalMilliseconds )
+        );
+    }
+
+    private async Task RunAnimationOnAllCellsAtRandomOrderAsync( Func<LabelOrNumberedGrid, TimeSpan, Task> animation )
     {
         List<int> cellIndexes = new( Enumerable.Range( 0, GameGrid.Children.Count ) );
+        List<Task> animationTasks = new();
 
         Random random = new();
         while ( cellIndexes.Count > 0 ) {
@@ -38,69 +65,83 @@ public partial class GamePage
             IView child = GameGrid.Children[ cellIndexes[ cellIndex ] ];
             LabelOrNumberedGrid cell = (LabelOrNumberedGrid)child;
             int animationLength = GetRandomAnimationLength( random );
-            Dispatcher.DispatchAsync( () => animation( cell, TimeSpan.FromMilliseconds( animationLength ) ) );
+            animationTasks.Add( Task.Run( () => animation( cell, TimeSpan.FromMilliseconds( animationLength ) ) ) );
             cellIndexes.RemoveAt( cellIndex );
         }
+
+        await Task.WhenAll( animationTasks );
     }
 
-    private void BlackHoleAnimation( LabelOrNumberedGrid element, TimeSpan animationLength )
+    private async Task BlackHoleAnimationAsync( LabelOrNumberedGrid element, TimeSpan animationLength )
     {
         uint animationLengthInMilliseconds = (uint)animationLength.TotalMilliseconds;
-        element.ScaleTo( 0, animationLengthInMilliseconds );
         double middleOfGameGridX = GameGrid.Width / 2;
         double middleOfGameGridY = GameGrid.Height / 2;
-        TranslateCellToAbsolutePosition( element, middleOfGameGridX, middleOfGameGridY, animationLengthInMilliseconds );
+        await Task.WhenAll(
+            element.ScaleTo( 0, animationLengthInMilliseconds, Easing.SpringIn ),
+            TranslateCellToAbsolutePositionAsync( element, middleOfGameGridX, middleOfGameGridY, animationLengthInMilliseconds )
+        );
     }
 
-    private static void TranslateCellToAbsolutePosition( LabelOrNumberedGrid cell, double newX, double newY, uint animationLength )
+    private static async Task TranslateCellToAbsolutePositionAsync( LabelOrNumberedGrid cell, double newX, double newY, uint animationLength )
     {
         double cellXOffset = cell.X + cell.Width / 2;
         double cellYOffset = cell.Y + cell.Height / 2;
-        cell.TranslateTo( -cellXOffset + newX, -cellYOffset + newY, animationLength );
+        await cell.TranslateTo( -cellXOffset + newX, -cellYOffset + newY, animationLength, Easing.SpringIn );
     }
 
-    private void MoveIrrelevantButtonsAwayAfterVictory()
+    private async Task MoveIrrelevantButtonsAwayAfterVictoryAsync()
     {
-        PauseBtn.TranslateTo( 0, -TopButtonsStack.Height );
-        BottomButtonsStack.TranslateTo( 0, BottomButtonsStack.Height );
-        NumberPad.TranslateTo( 0, -NumberPad.Height - NumberPad.X + Height );
+        await Task.WhenAll(
+            PauseBtn.TranslateTo( 0, -TopButtonsStack.Height ),
+            PauseBtn.FadeTo( 0 ),
+            BottomButtonsStack.TranslateTo( 0, BottomButtonsStack.Height ),
+            BottomButtonsStack.FadeTo( 0 ),
+            NumberPad.TranslateTo( 0, -NumberPad.Height - NumberPad.X + Height ),
+            NumberPad.FadeTo( 0 )
+        );
     }
 
-    private async Task ResetPageElementsPosition()
+    private async Task ResetPageElementsPositionAsync()
     {
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( PauseBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( BottomButtonsStack, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( NumberPad, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( NewGameBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( RestartBtn, minAnimationSpan ) );
-        _ = Dispatcher.DispatchAsync( () => ReturnElementToOriginalPositionAndScale( TimerLbl, minAnimationSpan ) );
-        await Task.Delay( minAnimationSpan );
+        await Task.WhenAll(
+            ReturnElementToOriginalPositionAndScaleAsync( PauseBtn, minAnimationSpan ),
+            ReturnElementToOriginalPositionAndScaleAsync( BottomButtonsStack, minAnimationSpan ),
+            ReturnElementToOriginalPositionAndScaleAsync( NumberPad, minAnimationSpan ),
+            ReturnElementToOriginalPositionAndScaleAsync( NewGameBtn, minAnimationSpan ),
+            ReturnElementToOriginalPositionAndScaleAsync( RestartBtn, minAnimationSpan ),
+            ReturnElementToOriginalPositionAndScaleAsync( TimerLbl, minAnimationSpan )
+        );
     }
 
-    private void MoveTimerToVictoryPosition()
+    private async Task MoveTimerToVictoryPositionAsync()
     {
-        TimerLbl.ScaleTo( 2 );
-        TranslateTimerToAbsolutePosition( GameGrid.Width / 2, GameGrid.Height * 0.75 );
+        await Task.WhenAll(
+            TimerLbl.ScaleTo( 2 ),
+            TranslateTimerToAbsolutePositionAsync( GameGrid.Width / 2, GameGrid.Height * 0.75 )
+        );
     }
 
-    private void TranslateTimerToAbsolutePosition( double newX, double newY )
+    private async Task TranslateTimerToAbsolutePositionAsync( double newX, double newY )
     {
         double timerXOffset = TimerLbl.X + PauseAndTimer.X + TimerLbl.Width / 2;
         double timerYOffset = TimerLbl.Y + PauseAndTimer.Y + TimerLbl.Height / 2;
-        TimerLbl.TranslateTo( -timerXOffset + newX, -timerYOffset + newY );
+        await TimerLbl.TranslateTo( -timerXOffset + newX, -timerYOffset + newY );
     }
 
-    private void MoveRelevantButtonsBelowTimerAfterVictory()
+    private async Task MoveRelevantButtonsBelowTimerAfterVictoryAsync()
     {
-        TranslateButtonToAbsolutePosition( NewGameBtn, GameGrid.Width / 2 - NewGameBtn.Width / 2, GameGrid.Height );
-        TranslateButtonToAbsolutePosition( RestartBtn, GameGrid.Width / 2 + RestartBtn.Width / 2, GameGrid.Height );
+        await Task.WhenAll(
+            TranslateButtonToAbsolutePositionAsync( NewGameBtn, GameGrid.Width / 2 - NewGameBtn.Width / 2, GameGrid.Height ),
+            TranslateButtonToAbsolutePositionAsync( RestartBtn, GameGrid.Width / 2 + RestartBtn.Width / 2, GameGrid.Height )
+        );
     }
 
-    private void TranslateButtonToAbsolutePosition( Button button, double newX, double newY )
+    private async Task TranslateButtonToAbsolutePositionAsync( Button button, double newX, double newY )
     {
         double buttonXOffset = NewGameAndRestart.X + button.Width;
         double buttonYOffset = NewGameAndRestart.Y + button.Height;
-        button.TranslateTo( -buttonXOffset + newX, -buttonYOffset + newY );
+        await button.TranslateTo( -buttonXOffset + newX, -buttonYOffset + newY );
     }
 
     private int GetRandomAnimationLength( Random random )

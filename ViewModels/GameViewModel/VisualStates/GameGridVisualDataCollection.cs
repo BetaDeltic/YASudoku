@@ -70,7 +70,7 @@ public class GameGridVisualDataCollection
     public void RestartCellValues()
     {
         visualCells.ForEach( cell => {
-            cell.RestartValue();
+            cell.RestartCell();
             cell.RemoveAllCandidates();
         } );
     }
