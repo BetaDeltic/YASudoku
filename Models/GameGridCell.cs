@@ -42,8 +42,7 @@ public class GameGridCell
         candidates = new( Enumerable.Range( 1, candidatesCount ) );
     }
 
-    public new string ToString()
-    => !HasUserFacingValue ? $"Candidates: {CandidatesText}" : UserFacingText;
+    public new string ToString() => !HasUserFacingValue ? $"Candidates: {CandidatesText}" : UserFacingText;
 
     public void AddRelatedCell( GameGridCell relatedCell )
     {
@@ -54,8 +53,7 @@ public class GameGridCell
         relatedCells.Add( relatedCell );
     }
 
-    public void AddToCandidates( int newCandidate )
-        => candidates.Add( newCandidate );
+    public void AddToCandidates( int newCandidate ) => candidates.Add( newCandidate );
 
     public void Initialize( int initValue )
     {
