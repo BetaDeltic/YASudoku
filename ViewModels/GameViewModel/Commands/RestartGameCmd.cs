@@ -8,7 +8,7 @@ public class RestartGameCmd : GameCommandsBase
     public RestartGameCmd( VisualStatesHandler visualState, IPlayerJournalingService journalingService )
         : base( visualState, journalingService ) { }
 
-    public async void RestartGame( bool previousGameAborted )
+    public async Task RestartGame( bool previousGameAborted )
     {
         if ( previousGameAborted ) await EndRunningGame();
 

@@ -13,7 +13,7 @@ public class GameVMTestsBase
 
     public NumPadButton? SelectedNumber => gameVM.VisualState?.SelectedNumber;
     public GameGridCellVisualData? SelectedCell => gameVM.VisualState?.SelectedCell;
-    public readonly GameGridVisualDataCollection GameData;
+    public GameGridVisualDataCollection GameData;
     public readonly NumPadVisualState NumPadVS;
     public readonly CommonButtonVisualState EraserVS;
     public readonly VisualStatesHandler VisualState;
@@ -111,7 +111,7 @@ public class GameVMTestsBase
         IndexOfDifferentEmptyCell = GetUnusedIndexOfEmptyCellAndSaveIt();
     }
 
-    private int GetUnusedIndexOfFilledCellAndSaveIt()
+    protected int GetUnusedIndexOfFilledCellAndSaveIt()
     {
         int unusedIndex =
             GameData.Select( ( cell, index ) => cell.UserFacingValue != 0 && !usedIndexes.Contains( index ) ? index : -1 )
@@ -121,7 +121,7 @@ public class GameVMTestsBase
         return unusedIndex;
     }
 
-    private int GetUnusedIndexOfEmptyCellAndSaveIt()
+    protected int GetUnusedIndexOfEmptyCellAndSaveIt()
     {
         int unusedIndex =
             GameData.Select( ( cell, index ) => cell.UserFacingValue == 0 && !usedIndexes.Contains( index ) ? index : -1 )
@@ -153,6 +153,7 @@ public class GameVMTestsBase
 
     public void ActivateEraser() => gameVM.SelectEraser();
     public void ActivatePencil() => gameVM.SwitchPenAndPencil();
+    public void TogglePause() => gameVM.PauseGame();
 
     public void ActivateEnabledNumber() => SelectEnabledNumber();
     public void ActivateDisabledNumber() => SelectDisabledNumber();
@@ -228,6 +229,10 @@ public class GameVMTestsBase
     public void AssertEnabledNumberIsSelected() => AssertNumberIsSelected( EnabledNumber );
 
     public void AssertEnabledNumberIsActive() => AssertNumberIsActive( EnabledNumber );
+
+    public void AssertDisabledNumberIsActive() => AssertNumberIsActive( DisabledNumber );
+
+    public void AssertDisabledNumberIsSelected() => AssertNumberIsSelected( DisabledNumber );
 
     public void AssertNumberIsSelected( int buttonNumber )
         => Assert.Equal( GetNumPadButtonFromNumber( buttonNumber ), SelectedNumber );
@@ -308,13 +313,23 @@ public class GameVMTestsBase
         Assert.False( AreUnrelatedCellsWithDifferentNumberHighlighted( cell ) );
     }
 
+    public void AssertAllCellsAreHidingValues() => Assert.False( GameData.Any( cell => !cell.IsHidingAllValues ) );
+
+    public void AssertNoCellIsHidingValues() => Assert.False( GameData.Any( cell => cell.IsHidingAllValues ) );
+
     public void AssertEraserIsSelected() => Assert.True( VisualState.IsEraserActive );
 
     public void AssertEraserIsNotSelected() => Assert.False( VisualState.IsEraserActive );
 
     public void AssertPencilIsSelected() => Assert.True( VisualState.IsPencilActive );
 
-    public static void AssertRelatedCellsAreHighlightedAsSelected( GameGridCellVisualData? cell )
+    public void AssertPencilIsNotSelected() => Assert.False( VisualState.IsPencilActive );
+
+    public void AssertIsPaused() => Assert.True( VisualState.IsPaused );
+
+    public void AssertIsNotPaused() => Assert.False( VisualState.IsPaused );
+
+    public void AssertRelatedCellsAreHighlightedAsSelected( GameGridCellVisualData? cell )
     {
         Assert.NotNull( cell );
         Assert.True( AreRelatedCellsHighlightedAsRelated( cell ) );

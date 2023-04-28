@@ -30,6 +30,14 @@ public class GameGridVisualDataCollection
         InitializeCellData( generatedCellData, gridSize );
     }
 
+    internal GameGridVisualDataCollection( GameGridVisualDataCollection collection, IServiceProvider serviceProvider )
+    {
+        this.serviceProvider = serviceProvider;
+
+        visualCells = new( collection.Count );
+        collection.ForEach( cell => visualCells.Add( cell ) );
+    }
+
     private void InitializeCellData( GameGridCollection generatedCellData, int candidateCount )
     {
         ISettingsService settings = serviceProvider.GetRequiredService<ISettingsService>();
@@ -48,6 +56,8 @@ public class GameGridVisualDataCollection
     }
 
     public bool Any( Func<GameGridCellVisualData, bool> func ) => visualCells.Any( func );
+
+    public bool All( Func<GameGridCellVisualData, bool> func ) => visualCells.All( func );
 
     public void ForEach( Action<GameGridCellVisualData> action ) => visualCells.ForEach( action );
 

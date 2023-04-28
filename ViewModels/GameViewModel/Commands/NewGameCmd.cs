@@ -15,7 +15,7 @@ public class NewGameCmd : GameCommandsBase
         generator = puzzleGenerator; 
     }
 
-    public async void NewGame( bool previousGameAborted )
+    public async Task NewGame( bool previousGameAborted )
     {
         if ( previousGameAborted ) await EndRunningGame();
         await GenerateAndReplaceGameData();
