@@ -17,6 +17,10 @@ public class SelectEraserCmd
             return;
         }
 
+        if ( visualState.PencilVS.IsActive ) {
+            visualState.PencilVS.DeactivateButton();
+        }
+
         // Can't have eraser active along with input
         if ( visualState.NumPadVS.SelectedButton != null ) {
             visualState.NumPadVS.DeselectCurrentNumber();
