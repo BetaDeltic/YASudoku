@@ -65,6 +65,7 @@ public class GameVMTestsBase
         PrepareGameBoard();
 
         gameVM.VisualState.UpdateAllButtonRemainingCounts();
+        VisualState.StartGame();
     }
 
     private void PrepareGameBoard()
