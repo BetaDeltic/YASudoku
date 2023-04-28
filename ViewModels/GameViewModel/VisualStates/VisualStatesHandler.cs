@@ -13,9 +13,9 @@ public class VisualStatesHandler : IDisposable
     public event Action? NewGameData;
 
     public readonly Subject<Unit> SignalWhenWipingGameBoard = new();
-    public readonly Subject<Unit> WipingGameBoardCompleted = new();
+    public readonly BehaviorSubject<bool> WipingGameBoardCompleted = new( false );
     public readonly Subject<Unit> SignalWhenStartingNewGame = new();
-    public readonly Subject<Unit> StartingNewGameCompleted = new();
+    public readonly BehaviorSubject<bool> StartingNewGameCompleted = new( false );
 
     public readonly GameGridVisualState GameGridVS;
     public readonly CommonButtonVisualState PencilVS;

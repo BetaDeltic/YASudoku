@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using YASudoku.Models;
@@ -58,7 +57,7 @@ public partial class GameVM : VMsBase, IDisposable
 
         journal.SetVisualState( VisualState );
 
-        switchPenAndPencilCmd = new( VisualState.PencilVS );
+        switchPenAndPencilCmd = new( VisualState );
         pressNumberCmd = new( VisualState );
         selectCellCmd = new( VisualState );
         selectEraserCmd = new( VisualState );
@@ -89,29 +88,32 @@ public partial class GameVM : VMsBase, IDisposable
     public void OnAnimationEnded( AnimationTypes animationType )
     {
         if ( animationType == AnimationTypes.AbortingGame ) {
-            VisualState?.WipingGameBoardCompleted.OnNext( Unit.Default );
-            return; // Aborting animation is a composite animation, so we don't want to set the animation running to false
+            VisualState?.WipingGameBoardCompleted.OnNext( true );
+            return; // Aborting game animation is a composite animation, so we don't want to set the animation running to false
         }
 
         else if ( animationType == AnimationTypes.NewGame ) {
-            VisualState?.StartingNewGameCompleted.OnNext( Unit.Default );
+            VisualState?.StartingNewGameCompleted.OnNext( true );
         }
 
         isAnimationRunningSubject.OnNext( false );
     }
 
     [RelayCommand]
-    public void StartNewGame()
+    public async Task StartNewGame()
     {
+        if ( newGameCmd == null ) return;
         bool abortingGame = VisualState?.CurrentGameState == GameStates.Running;
-        ExecuteIfNotInRunningAnimation( () => newGameCmd?.NewGame( abortingGame ) );
+        await ExecuteAsyncIfNotRunningAnimation( () => newGameCmd.NewGame( abortingGame ) );
     }
 
     [RelayCommand]
-    public void RestartGame()
+    public async Task RestartGame()
     {
+        if ( restartGameCmd == null ) return;
+
         bool abortingGame = VisualState?.CurrentGameState == GameStates.Running;
-        ExecuteIfNotInRunningAnimation( () => restartGameCmd?.RestartGame( abortingGame ) );
+        await ExecuteAsyncIfNotRunningAnimation( () => restartGameCmd.RestartGame( abortingGame ) );
     }
 
     [RelayCommand]
@@ -143,6 +145,12 @@ public partial class GameVM : VMsBase, IDisposable
         if ( await IsAnimationRunning.FirstAsync() ) return;
 
         action();
+    }
+
+    private async Task ExecuteAsyncIfNotRunningAnimation( Func<Task> func )
+    {
+        if ( await IsAnimationRunning.FirstAsync() ) return;
+        await func();
     }
 
     public void OnPageAppearing() => VisualState?.StartGame();

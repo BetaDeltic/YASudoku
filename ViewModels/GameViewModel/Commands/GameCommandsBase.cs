@@ -1,5 +1,6 @@
 ﻿using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using YASudoku.Services.JournalingServices;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
 
@@ -20,7 +21,7 @@ public class GameCommandsBase
     {
         visualState.TimerVS.StopTimerAndSetTextToZero();
         visualState.SignalWhenWipingGameBoard.OnNext( Unit.Default );
-        await visualState.WipingGameBoardCompleted.FirstAsync();
+        await AwaitBehaviorSubjectAndResetIt( visualState.WipingGameBoardCompleted );
     }
 
     public async Task StartNewGame()
@@ -28,7 +29,13 @@ public class GameCommandsBase
         journal.ClearJournal();
         visualState.ResetVisualStatesToDefault();
         visualState.SignalWhenStartingNewGame.OnNext( Unit.Default );
-        await visualState.StartingNewGameCompleted.FirstAsync();
+        await AwaitBehaviorSubjectAndResetIt( visualState.StartingNewGameCompleted );
         visualState.StartGame();
+    }
+
+    private static async Task AwaitBehaviorSubjectAndResetIt( BehaviorSubject<bool> behaviorSubject )
+    {
+        await behaviorSubject.FirstAsync( value => value == true );
+        behaviorSubject.OnNext( false );
     }
 }
