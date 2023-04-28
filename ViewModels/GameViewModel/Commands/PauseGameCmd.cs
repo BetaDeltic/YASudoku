@@ -21,7 +21,7 @@ public class PauseGameCmd : CommandsBase
             timerVS.PauseTimer();
             pauseVS.ActivateButton();
             grid.UnhighlightCellsWithSameNumber();
-            grid.UnhiglightSelectedCellAndRelatedCells();
+            grid.UnhighlightSelectedCellAndRelatedCells();
             grid.HideAllCellValues();
         } else {
             pauseVS.DeactivateButton();
