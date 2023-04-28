@@ -15,23 +15,23 @@ public class GameCommandsTestsBase : GameVMTestsBase
     public static IEnumerable<object[]> ArrangeActions()
     {
         var baseClass = new GameVMTestsBase();
-        yield return new[] { () => { } };
-        yield return new[] { baseClass.ActivateEnabledNumber };
-        yield return new[] { baseClass.ActivateDisabledNumber };
-        yield return new[] { () => { baseClass.ActivateEmptyCell( out _ ); } };
-        yield return new[] { () => { baseClass.ActivateLockedCell( out _ ); } };
-        yield return new[] { () => { baseClass.ActivateCellWithCandidateOfEnabledNumber(); } };
-        yield return new[] { () => { baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ); } };
-        yield return new[] { () => { baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ); } };
-        yield return new[] { baseClass.ActivateEraser };
-        yield return new[] { baseClass.ActivatePencil };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEnabledNumber(); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateDisabledNumber(); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEmptyCell( out _ ); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateLockedCell( out _ ); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellWithCandidateOfEnabledNumber(); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ); } };
-        yield return new[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { () => { } };
+        yield return new object[] { baseClass.ActivateEnabledNumber };
+        yield return new object[] { baseClass.ActivateDisabledNumber };
+        yield return new object[] { () => { baseClass.ActivateEmptyCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateLockedCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateCellWithCandidateOfEnabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { baseClass.ActivateEraser };
+        yield return new object[] { baseClass.ActivatePencil };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEnabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateDisabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEmptyCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateLockedCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellWithCandidateOfEnabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ); } };
     }
 
     protected void CommonAssertions()
