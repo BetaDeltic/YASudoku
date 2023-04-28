@@ -107,6 +107,12 @@ public class GameGridVisualState
         highlightedNumber = 0;
     }
 
+    public void UnhiglightSelectedCellAndRelatedCells()
+    {
+        if ( SelectedCell == null ) return;
+        SelectedCell.UnhighlightCellAndNotifyRelated();
+    }
+
     public void RemoveValueFromSelectedCell( bool addToJournal = true )
     {
         if ( SelectedCell == null ) {
