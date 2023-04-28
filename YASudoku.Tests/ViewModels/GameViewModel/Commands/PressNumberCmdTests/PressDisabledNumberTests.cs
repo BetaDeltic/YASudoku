@@ -358,23 +358,6 @@ public class PressDisabledNumberTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActivePencilAndWithActiveEraser_ClickDisabledNumber_KeepsPencilSelected_KeepsNumberSelected_DeselectsEraser_HighlightsCellsWithSameValue()
-    {
-        // Arrange
-        ActivatePencil();
-        ActivateEraser();
-        // Act
-        SelectDisabledNumber();
-        // Assert
-        AssertPencilIsSelected();
-        AssertNumberIsSelected( DisabledNumber );
-        AssertNumberIsActive( DisabledNumber );
-        AssertEraserIsNotSelected();
-        AssertCellsWithValueAreHighlightedAsSelected( DisabledNumber );
-        AssertCellsWithDifferentValueAreNotHighlighted( DisabledNumber );
-    }
-
-    [Fact]
     public void WithActiveEnabledNumber_ClickDisabledNumber_SelectsNumber_HighlightsCellsWithSameValue()
     {
         // Arrange

@@ -121,21 +121,6 @@ public class SelectLockedCellTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActivePencilAndWithActiveEraser_ClickLockedCell_NoCellSelected_KeepsCellValue_KeepsPencilActive_KeepsEraserActive()
-    {
-        // Arrange
-        ActivatePencil();
-        ActivateEraser();
-        // Act
-        GameGridCellVisualData affectedCell = ClickLockedCell( out int originalValue );
-        // Assert
-        AssertNoCellIsSelected();
-        AssertPencilIsSelected();
-        AssertEraserIsSelected();
-        AssertCellIsFilledWithSpecificValue( affectedCell, originalValue );
-    }
-
-    [Fact]
     public void WithActiveEraser_ClickLockedCell_NoCellSelected_KeepsCellValue_KeepsEraserActive()
     {
         // Arrange

@@ -198,22 +198,6 @@ public class SelectCellWithCorrectValueTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActivePencilAndWithActiveEraser_ClickCellWithCorrectValue_RemovesCellValue_KeepsPencilActive_KeepsEraserActive_NothingIsHighlighted()
-    {
-        // Arrange
-        ActivatePencil();
-        ActivateEraser();
-        // Act
-        GameGridCellVisualData affectedCell = ClickCellFilledWithCorrectValueOfEnabledNumber( out _ );
-        // Assert
-        AssertPencilIsSelected();
-        AssertEraserIsSelected();
-        AssertNoCellIsSelected();
-        AssertCellHasNoValue( affectedCell );
-        AssertNoCellIsHighlighted();
-    }
-
-    [Fact]
     public void WithActiveCellWithCorrectValue_ClickSameCell_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange

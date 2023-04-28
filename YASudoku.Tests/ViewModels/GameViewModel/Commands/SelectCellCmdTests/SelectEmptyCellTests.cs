@@ -155,21 +155,6 @@ public class SelectEmptyCellTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActivePencilAndWithActiveEraser_ClickEmptyCell_NoCellIsSelected_NoCellIsHighlighted_KeepsPencilActive_KeepsEraserActive()
-    {
-        // Arrange
-        ActivatePencil();
-        ActivateEraser();
-        // Act
-        ClickEmptyCell( out _ );
-        // Assert
-        AssertNoCellIsSelected();
-        AssertNoCellIsHighlighted();
-        AssertPencilIsSelected();
-        AssertEraserIsSelected();
-    }
-
-    [Fact]
     public void WithActivePencilAndWithActiveEmptyCell_ClickSameCell_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange

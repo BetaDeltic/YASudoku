@@ -170,22 +170,6 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActivePencilAndWithActiveEraser_ClickCellWithCandidates_RemovesAllCandidates_KeepsPencilSelected_KeepsEraserSelected_DeselectsCell_UnhighlightsEverything()
-    {
-        // Arrange
-        ActivatePencil();
-        ActivateEraser();
-        // Act
-        GameGridCellVisualData affectedCell = ClickCellWithCandidateOfEnabledNumber();
-        // Assert
-        AssertPencilIsSelected();
-        AssertEraserIsSelected();
-        AssertNoCellIsSelected();
-        AssertNoCellIsHighlighted();
-        AssertCellHasNoCandidates( affectedCell );
-    }
-
-    [Fact]
     public void WithActiveCellWithCandidates_ClickSameCell_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange
