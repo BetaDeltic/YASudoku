@@ -26,15 +26,12 @@ public partial class TimerVisualState : ObservableObject, IDisposable
         StopTimerAndSetTextToZero();
 
         timer = new( TimeSpan.FromSeconds( 1 ) ) { AutoReset = true };
+        timer.Elapsed += Timer_Elapsed;
 
         // Give player a chance to look around a bit
         TimeSpan gracePeriod = TimeSpan.FromSeconds( 1 );
         gracePeriodCts = new CancellationTokenSource();
         StartTimerAfterGracePeriodOrCancelOnPause( gracePeriod, gracePeriodCts.Token );
-
-        // Needs a null check because the timer could have been destroyed before the delay finished
-        if ( timer == null ) return;
-        timer.Elapsed += Timer_Elapsed;
     }
 
     private async void StartTimerAfterGracePeriodOrCancelOnPause( TimeSpan gracePeriod, CancellationToken cancellationToken )
@@ -43,7 +40,7 @@ public partial class TimerVisualState : ObservableObject, IDisposable
         
         try {
             await Task.Delay( gracePeriod, cancellationToken );
-            timer.Start();
+            timer?.Start();
         } catch ( TaskCanceledException ) {
             Debug.WriteLine( "Grace period canceled, timer not started" );
         }
