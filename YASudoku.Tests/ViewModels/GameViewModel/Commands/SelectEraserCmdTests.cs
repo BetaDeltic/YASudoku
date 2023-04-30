@@ -43,16 +43,18 @@ public class SelectEraserCmdTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithActiveEmptyCell_ClickEraser_EraserIsDeselected_CellIsDeselected_NoCellIsHighlighted()
+    public void WithActiveEmptyCell_ClickEraser_EraserIsDeselected_CellAndRelatedCellsAreHighlightedAndSelected()
     {
         // Arrange
-        ActivateEmptyCell( out _ );
+        GameGridCellVisualData affectedCell = ActivateEmptyCell( out _ );
         // Act
         ActivateEraser();
         // Assert
         AssertEraserIsNotSelected();
-        AssertNoCellIsSelected();
-        AssertNoCellIsHighlighted();
+        AssertCellIsSelected( affectedCell );
+        AssertCellIsHighlightedAsSelected( affectedCell );
+        AssertRelatedCellsAreHighlightedAsSelected( affectedCell );
+        AssertNoOtherAndUnrelatedCellsAreHighlighted( affectedCell );
     }
 
     [Fact]
