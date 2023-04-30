@@ -42,6 +42,12 @@ public class SelectEraserCmd
         // User is trying to delete cell candidates
         if ( !visualState.SelectedCell!.HasUserFacingValue ) {
             visualState.SelectedCell.RemoveAllCandidates();
+            return;
+        }
+
+        // User is trying to delete value from locked cell
+        if ( visualState.SelectedCell.IsLockedForChanges ) {
+            visualState.GameGridVS.UnhighlightCellsWithSameNumber();
             visualState.GameGridVS.DeselectCell();
             return;
         }
