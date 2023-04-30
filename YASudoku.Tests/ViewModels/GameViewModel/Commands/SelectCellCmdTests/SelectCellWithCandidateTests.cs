@@ -50,8 +50,7 @@ public class SelectCellWithCandidateTests : GameVMTestsBase
     }
 
     [Fact]
-    public void
-        WithActiveDisabledNumber_ClickCellWithCandidateOfEnabledNumber_DeselectsNumber_HighlightsCellAndRelatedCells()
+    public void WithActiveDisabledNumber_ClickCellWithCandidateOfEnabledNumber_DeselectsNumber_HighlightsCellAndRelatedCells()
     {
         // Arrange
         ActivateDisabledNumber();
