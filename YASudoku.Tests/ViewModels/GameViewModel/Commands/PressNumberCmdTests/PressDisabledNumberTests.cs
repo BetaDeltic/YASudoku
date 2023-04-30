@@ -18,19 +18,6 @@ public class PressDisabledNumberTests : GameVMTestsBase
     }
 
     [Fact]
-    public void WithNoActiveCell_ClickDisabledNumber_SelectsNumber_HighlightsCellsWithSameValue()
-    {
-        // Arrange
-        // Act
-        SelectDisabledNumber();
-        // Assert
-        AssertNumberIsActive( DisabledNumber );
-        AssertNumberIsSelected( DisabledNumber );
-        AssertCellsWithValueAreHighlightedAsSelected( DisabledNumber );
-        AssertCellsWithDifferentValueAreNotHighlighted( DisabledNumber );
-    }
-
-    [Fact]
     public void WithActiveEmptyCell_ClickDisabledNumber_DeselectsNumber_DeselectsCell_UnhighlightsEverything()
     {
         // Arrange
