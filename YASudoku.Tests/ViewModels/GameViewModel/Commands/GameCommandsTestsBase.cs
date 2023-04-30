@@ -16,15 +16,15 @@ public class GameCommandsTestsBase : GameVMTestsBase
     {
         GameVMTestsBase baseClass = new();
         yield return new object[] { () => { } };
-        yield return new object[] { () => baseClass.ActivateEnabledNumber };
-        yield return new object[] { () => baseClass.ActivateDisabledNumber };
-        yield return new object[] { () => baseClass.ActivateEmptyCell( out _ ) };
-        yield return new object[] { () => baseClass.ActivateLockedCell( out _ ) };
-        yield return new object[] { () => baseClass.ActivateCellWithCandidateOfEnabledNumber };
-        yield return new object[] { () => baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ) };
-        yield return new object[] { () => baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ) };
-        yield return new object[] { () => baseClass.ActivateEraser };
-        yield return new object[] { () => baseClass.ActivatePencil };
+        yield return new object[] { () => { baseClass.ActivateEnabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivateDisabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivateEmptyCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateLockedCell( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateCellWithCandidateOfEnabledNumber(); } };
+        yield return new object[] { () => { baseClass.ActivateCellFilledWithCorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateCellFilledWithIncorrectValueOfEnabledNumber( out _ ); } };
+        yield return new object[] { () => { baseClass.ActivateEraser(); } };
+        yield return new object[] { () => { baseClass.ActivatePencil(); } };
         yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEnabledNumber(); } };
         yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateDisabledNumber(); } };
         yield return new object[] { () => { baseClass.ActivatePencil(); baseClass.ActivateEmptyCell( out _ ); } };
