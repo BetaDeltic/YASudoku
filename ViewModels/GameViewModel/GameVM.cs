@@ -15,7 +15,7 @@ public partial class GameVM : VMsBase, IDisposable
     public readonly int gridSize = 9;
 
     private readonly IPuzzleGenerator generator;
-    private readonly IPlayerJournalingService journal;
+    internal readonly IPlayerJournalingService journal;
     public readonly IServiceProvider serviceProvider;
 
     private SwitchPenAndPencilCmd? switchPenAndPencilCmd;

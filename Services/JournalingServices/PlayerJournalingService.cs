@@ -4,7 +4,7 @@ namespace YASudoku.Services.JournalingServices;
 
 public class PlayerJournalingService : IPlayerJournalingService
 {
-    private record Transaction( VisualStatesHandler VisualState, PlayerTransactionTypes TransactionType,
+    internal record Transaction( VisualStatesHandler VisualState, PlayerTransactionTypes TransactionType,
         GameGridCellVisualData AffectedCell, int AffectedNumber )
     {
         public void Rollback()
@@ -50,7 +50,7 @@ public class PlayerJournalingService : IPlayerJournalingService
         }
     }
 
-    private readonly Stack<Transaction> TransactionJournal = new();
+    internal readonly Stack<Transaction> TransactionJournal = new();
 
     private VisualStatesHandler? VisualState;
 

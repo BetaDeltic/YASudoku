@@ -214,10 +214,10 @@ public class TestsCommon
         return mock.Object;
     }
 
-    public static IServiceProvider GetServiceProviderMock()
+    public static IServiceProvider GetServiceProviderMock( IPlayerJournalingService journalingService )
     {
         Mock<IServiceProvider> serviceProviderMock = new();
-        serviceProviderMock.Setup( x => x.GetService( typeof( IPlayerJournalingService ) ) ).Returns( new PlayerJournalingService() );
+        serviceProviderMock.Setup( x => x.GetService( typeof( IPlayerJournalingService ) ) ).Returns( journalingService );
         serviceProviderMock.Setup( x => x.GetService( typeof( ISettingsService ) ) ).Returns( GetSettingsMock() );
 
         return serviceProviderMock.Object;

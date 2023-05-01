@@ -18,8 +18,6 @@ public class GameVMTestsBase
     public readonly CommonButtonVisualState EraserVS;
     public readonly VisualStatesHandler VisualState;
 
-    private readonly Mock<IPlayerJournalingService> journalMock = new();
-
     private readonly List<int> usedIndexes = new();
 
     // Used during board preparation
@@ -34,6 +32,7 @@ public class GameVMTestsBase
     public int IndexOfLockedCellWithValueOfEnabledNumber;
     public int IndexOfLockedCellWithValueOfDisabledNumber;
     public int IndexOfEmptyCell;
+    public int IndexOfEmptyRelatedCell;
     public int IndexOfDifferentEmptyCell;
     public int IndexOfCellFilledWithCorrectValueOfEnabledNumber;
     public int IndexOfCellFilledWithCorrectValueOfDifferentEnabledNumber;
@@ -54,7 +53,9 @@ public class GameVMTestsBase
         Mock<IPuzzleGenerator> puzzleMock = new();
         puzzleMock.Setup( x => x.GenerateNewPuzzle() ).Returns( TestsCommon.CreateValidContainerWithoutMissingCells() );
 
-        gameVM = new( puzzleMock.Object, TestsCommon.GetSettingsMock(), TestsCommon.GetServiceProviderMock(), journalMock.Object );
+        IPlayerJournalingService journalingService = new PlayerJournalingService();
+
+        gameVM = new( puzzleMock.Object, TestsCommon.GetSettingsMock(), TestsCommon.GetServiceProviderMock( journalingService ), journalingService );
         gameVM.PrepareGameView( true );
 
         VisualState = gameVM.VisualState ?? throw new SystemException( gameDataNotInitialized );
@@ -110,6 +111,19 @@ public class GameVMTestsBase
 
         IndexOfEmptyCell = GetUnusedIndexOfEmptyCellAndSaveIt();
         IndexOfDifferentEmptyCell = GetUnusedIndexOfEmptyCellAndSaveIt();
+        IndexOfEmptyRelatedCell = GetUnusedIndexOfRelatedCellAndSaveIt( IndexOfEmptyCell );
+
+        GameData[ IndexOfEmptyRelatedCell ].SetUserFacingValueInternal( 0 );
+        gameVM.journal.ClearJournal();
+    }
+
+    private int GetUnusedIndexOfRelatedCellAndSaveIt( int indexOfCell )
+    {
+        int unusedIndex =
+            GameData[ indexOfCell ].relatedCells.Select( ( cell, index ) => !usedIndexes.Contains( index ) ? index : -1 )
+            .First( index => index != -1 );
+        usedIndexes.Add( unusedIndex );
+        return unusedIndex;
     }
 
     protected int GetUnusedIndexOfFilledCellAndSaveIt()
@@ -183,6 +197,8 @@ public class GameVMTestsBase
         => ClickCellAndReturnIt( IndexOfEmptyCell, out originalValue );
     public GameGridCellVisualData ClickDifferentEmptyCell()
         => ClickCellAndReturnIt( IndexOfDifferentEmptyCell, out _ );
+    public GameGridCellVisualData ClickRelatedEmptyCell()
+        => ClickCellAndReturnIt( IndexOfEmptyRelatedCell, out _ );
     public GameGridCellVisualData ClickLockedCell( out int originalValue )
         => ClickCellAndReturnIt( IndexOfLockedCell, out originalValue );
     public GameGridCellVisualData ClickLockedCellWithValueOfEnabledNumber( out int originalValue )
@@ -209,6 +225,8 @@ public class GameVMTestsBase
         => ClickCellAndReturnIt( IndexOfCellFilledWithIncorrectValueOfDisabledNumber, out originalValue );
     public GameGridCellVisualData ClickCellFilledWithCorrectValueOfDifferentEnabledNumber( out int originalValue )
         => ClickCellAndReturnIt( IndexOfCellFilledWithCorrectValueOfDifferentEnabledNumber, out originalValue );
+
+    public void ClickUndoButton() => gameVM.UndoLastAction();
 
     private GameGridCellVisualData ClickCellAndReturnIt( int index, out int originalValue )
     {
@@ -343,9 +361,7 @@ public class GameVMTestsBase
     }
 
     public void AssertNoTransactionAddedToJournal()
-        => journalMock.Verify(
-            x => x.AddTransaction( It.IsAny<PlayerTransactionTypes>(), It.IsAny<GameGridCellVisualData>(),
-                It.IsAny<int>() ), Times.Never );
+        => Assert.True( ((PlayerJournalingService)gameVM.journal).TransactionJournal.Count == 0 );
 
     public NumPadButton GetNumPadButtonFromNumber( int buttonNumber ) => NumPadVS.NumPadButtons[ buttonNumber - 1 ];
 
