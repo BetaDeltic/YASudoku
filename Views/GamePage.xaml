@@ -63,5 +63,8 @@
             />
         </HorizontalStackLayout>
         <flyouts:SettingsFlyout x:Name="SettingsFlyout" Grid.RowSpan="4" />
+        <!-- These buttons exist because of https://github.com/xamarin/Xamarin.Forms/issues/6760 issue-->
+        <Button x:Name="NewGameAndroidTempBtn" Text="New game" />
+        <Button x:Name="RestartAndroidTempBtn" Text="Restart" />
     </Grid>
 </ContentPage>

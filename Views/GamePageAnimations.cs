@@ -3,10 +3,15 @@ using YASudoku.ViewModels.GameViewModel;
 
 namespace YASudoku.Views;
 
+// Some animations here are split into Android specific code as a workaround for https://github.com/xamarin/Xamarin.Forms/issues/6760 issue
+
 public partial class GamePage
 {
     private readonly TimeSpan minAnimationSpan = TimeSpan.FromMilliseconds( 500 );
     private readonly TimeSpan maxAnimationSpan = TimeSpan.FromMilliseconds( 1000 );
+
+    private const double gameOverButtonsXOffsetFromMiddle = 40;
+    private const double gameOverButtonsYOffsetFromMiddle = 100;
 
     private void RunVictoryAnimation()
         => RunAnimationAndNotifyGameVM( RunVictoryAnimationAsync, AnimationTypes.Victory );
@@ -104,6 +109,10 @@ public partial class GamePage
 
     private async Task ResetPageElementsPositionAsync()
     {
+#if ANDROID
+        await HideTemporaryButtonsShowRegularOnesAsync();
+#endif
+
         await Task.WhenAll(
             ReturnElementToOriginalPositionAndScaleAsync( PauseBtn, minAnimationSpan ),
             ReturnElementToOriginalPositionAndScaleAsync( BottomButtonsStack, minAnimationSpan ),
@@ -113,6 +122,29 @@ public partial class GamePage
             ReturnElementToOriginalPositionAndScaleAsync( TimerLbl, minAnimationSpan )
         );
     }
+
+#if ANDROID
+    private async Task HideTemporaryButtonsShowRegularOnesAsync()
+    {
+        ChangeTemporaryButtonsVisibility( makeVisible: false );
+        await ChangeRegularButtonsVisibilityAsync( makeVisible: true );
+    }
+
+    private async Task ChangeRegularButtonsVisibilityAsync( bool makeVisible )
+    {
+        double opacity = makeVisible ? 1 : 0;
+        await Task.WhenAll(
+            NewGameBtn.FadeTo( opacity, 0 ),
+            RestartBtn.FadeTo( opacity, 0 )
+        );
+    }
+
+    private void ChangeTemporaryButtonsVisibility( bool makeVisible )
+    {
+        NewGameAndroidTempBtn.IsVisible = makeVisible;
+        RestartAndroidTempBtn.IsVisible = makeVisible;
+    }
+#endif
 
     private async Task MoveTimerToVictoryPositionAsync()
     {
@@ -131,19 +163,65 @@ public partial class GamePage
 
     private async Task MoveRelevantButtonsBelowTimerAfterVictoryAsync()
     {
+        double buttonsYPosition = GetGameOverButtonsYPosition();
         await Task.WhenAll(
-            TranslateButtonToAbsolutePositionAsync( NewGameBtn, GameGrid.Width / 2 - NewGameBtn.Width / 2, GameGrid.Height ),
-            TranslateButtonToAbsolutePositionAsync( RestartBtn, GameGrid.Width / 2 + RestartBtn.Width / 2, GameGrid.Height )
+            TranslateButtonToAbsolutePositionAsync( NewGameBtn, GetGameOverNewGameButtonXPosition(), buttonsYPosition ),
+            TranslateButtonToAbsolutePositionAsync( RestartBtn, GetGameOverRestartButtonXPosition(), buttonsYPosition )
+        );
+#if ANDROID
+        await MoveTemporaryButtonsInCorrectPositionAsync();
+        await ShowTemporaryButtonsHideRegularOnesAsync();
+#endif
+    }
+#if ANDROID
+    private async Task ShowTemporaryButtonsHideRegularOnesAsync()
+    {
+        await ChangeRegularButtonsVisibilityAsync( makeVisible: false );
+        ChangeTemporaryButtonsVisibility( makeVisible: true );
+    }
+
+    private async Task MoveTemporaryButtonsInCorrectPositionAsync()
+    {
+        double buttonsYPosition = GetGameOverButtonsYPosition();
+        await Task.WhenAll(
+            TranslateTempButtonToAbsolutePositionAsync( NewGameAndroidTempBtn, GetGameOverNewGameButtonXPosition(), buttonsYPosition ),
+            TranslateTempButtonToAbsolutePositionAsync( RestartAndroidTempBtn, GetGameOverRestartButtonXPosition(), buttonsYPosition )
         );
     }
 
+    private static async Task TranslateTempButtonToAbsolutePositionAsync( Button button, double newX, double newY )
+    {
+        double buttonXOffset = button.X;
+        double buttonYOffset = button.Y;
+        await button.TranslateTo( -buttonXOffset + newX, -buttonYOffset + newY, 0 );
+    }
+#endif
     private async Task TranslateButtonToAbsolutePositionAsync( Button button, double newX, double newY )
     {
-        double buttonXOffset = NewGameAndRestart.X + button.Width;
-        double buttonYOffset = NewGameAndRestart.Y + button.Height;
+        double buttonXOffset = TopButtonsStack.Padding.Left + NewGameAndRestart.X + button.X;
+        double buttonYOffset = TopButtonsStack.Padding.Top + NewGameAndRestart.Y + button.Y;
         await button.TranslateTo( -buttonXOffset + newX, -buttonYOffset + newY );
     }
 
     private int GetRandomAnimationLength( Random random )
         => random.Next( (int)minAnimationSpan.TotalMilliseconds, (int)maxAnimationSpan.TotalMilliseconds );
+
+    private double GetGameOverNewGameButtonXPosition()
+    {
+        double gridXMiddle = MainGrid.Width / 2;
+        double newGameButtonXOffset = NewGameBtn.Width + gameOverButtonsXOffsetFromMiddle;
+        return gridXMiddle - newGameButtonXOffset;
+    }
+
+    private double GetGameOverRestartButtonXPosition()
+    {
+        double gridXMiddle = MainGrid.Width / 2;
+        return gridXMiddle + gameOverButtonsXOffsetFromMiddle;
+    }
+
+    private double GetGameOverButtonsYPosition()
+    {
+        double gridYMiddle = MainGrid.Height / 2;
+        return gridYMiddle + gameOverButtonsYOffsetFromMiddle;
+    }
 }

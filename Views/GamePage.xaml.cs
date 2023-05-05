@@ -132,14 +132,19 @@ public partial class GamePage : ContentPage
     private async void GameGrid_PropertyChanged( object? sender, PropertyChangedEventArgs e )
     {
         // Workaround for having Grid of same Height and Width, until https://github.com/dotnet/maui/issues/11789 is fixed.
-        if ( e.PropertyName != nameof( GameGrid.Width ) ) return;
-
-        await Dispatcher.DispatchAsync( () => { } ); // Wait for UI to be ready before measuring the width
-
-        if ( !( GameGrid.Width > 0 ) ) return;
+        if ( !await ElementIsReadyForWidthChanges( GameGrid, e ) ) return;
 
         GameGrid.HeightRequest = GameGrid.Width;
         GameGrid.PropertyChanged -= GameGrid_PropertyChanged;
+    }
+
+    private async Task<bool> ElementIsReadyForWidthChanges( View element, PropertyChangedEventArgs e )
+    {
+        if ( e.PropertyName != nameof( element.Width ) ) return false;
+
+        await Dispatcher.DispatchAsync( () => { } ); // Wait for UI to be ready before measuring the width
+
+        return element.Width > 0;
     }
 
     private void InitializeNumberPad()
@@ -179,8 +184,12 @@ public partial class GamePage : ContentPage
         CommonButtonVisualState commonButtonVS = gameVM.VisualState!.OtherButtonsVS;
         SetCommonButtonBindings( NewGameBtn, commonButtonVS );
         SetButtonCommandBinding( NewGameBtn, nameof( GameVM.StartNewGameCommand ) );
+        SetCommonButtonBindings( NewGameAndroidTempBtn, commonButtonVS );
+        SetButtonCommandBinding( NewGameAndroidTempBtn, nameof( GameVM.StartNewGameCommand ) );
         SetCommonButtonBindings( RestartBtn, commonButtonVS );
         SetButtonCommandBinding( RestartBtn, nameof( GameVM.RestartGameCommand ) );
+        SetCommonButtonBindings( RestartAndroidTempBtn, commonButtonVS );
+        SetButtonCommandBinding( RestartAndroidTempBtn, nameof( GameVM.RestartGameCommand ) );
         SetCommonButtonBindings( SettingsBtn, commonButtonVS );
         SetButtonCommandBinding( SettingsBtn, nameof( GameVM.OpenSettingsCommand ) );
         SetCommonButtonBindings( UndoBtn, commonButtonVS );
@@ -197,6 +206,13 @@ public partial class GamePage : ContentPage
         EraseBtn.BindingContext = gameVM.VisualState.EraserVS;
         SetCommonButtonBindings( EraseBtn );
         SetButtonCommandBinding( EraseBtn, nameof( GameVM.SelectEraserCommand ), gameVM );
+#if ANDROID
+        RestartBtn.PropertyChanged += RestartBtn_PropertyChanged;
+        NewGameBtn.PropertyChanged += NewGameBtn_PropertyChanged;
+#else
+        RestartAndroidTempBtn.IsVisible = false;
+        NewGameAndroidTempBtn.IsVisible = false;
+#endif
     }
 
     private void SetCommonButtonBindings( Button button, object? bindingSource = null )
@@ -221,6 +237,54 @@ public partial class GamePage : ContentPage
             button.SetBinding( Button.CommandProperty, new Binding( commandPath, source: source ) );
     }
 
+#if ANDROID
+    // Workarounds for https://github.com/xamarin/Xamarin.Forms/issues/6760
+    // The idea is to wait for the real buttons to be measured, then copy their Width and Height to the temporary buttons.
+    // After that we no longer have to handle this event, but we have to listen to when the temp buttones are changed to make them invisible afterwards.
+    private async void NewGameBtn_PropertyChanged( object? sender, PropertyChangedEventArgs e )
+    {
+        if ( !await ElementIsReadyForWidthChanges( NewGameBtn, e ) ) return;
+
+        NewGameBtn.PropertyChanged -= NewGameBtn_PropertyChanged;
+        NewGameAndroidTempBtn.SizeChanged += NewGameAndroidTempBtn_SizeChanged;
+
+        NewGameAndroidTempBtn.WidthRequest = NewGameBtn.Width;
+        NewGameAndroidTempBtn.HeightRequest = NewGameBtn.Height;
+    }
+
+    private void NewGameAndroidTempBtn_SizeChanged( object? sender, EventArgs e )
+    {
+        double widthDiff = Math.Abs( NewGameBtn.Width - NewGameAndroidTempBtn.Width );
+        double heightDiff = Math.Abs( NewGameBtn.Height - NewGameAndroidTempBtn.Height );
+
+        if ( widthDiff < 1 && heightDiff < 1 ) {
+            NewGameAndroidTempBtn.SizeChanged -= NewGameAndroidTempBtn_SizeChanged;
+            NewGameAndroidTempBtn.IsVisible = false;
+        }
+    }
+
+    private async void RestartBtn_PropertyChanged( object? sender, PropertyChangedEventArgs e )
+    {
+        if ( !await ElementIsReadyForWidthChanges( RestartBtn, e ) ) return;
+
+        RestartBtn.PropertyChanged -= RestartBtn_PropertyChanged;
+        RestartAndroidTempBtn.SizeChanged += RestartAndroidTempBtn_SizeChanged;
+
+        RestartAndroidTempBtn.WidthRequest = RestartBtn.Width;
+        RestartAndroidTempBtn.HeightRequest = RestartBtn.Height;
+    }
+
+    private void RestartAndroidTempBtn_SizeChanged( object? sender, EventArgs e )
+    {
+        double widthDiff = Math.Abs( RestartBtn.Width - RestartAndroidTempBtn.Width );
+        double heightDiff = Math.Abs( RestartBtn.Height - RestartAndroidTempBtn.Height );
+
+        if ( widthDiff < 1 && heightDiff < 1 ) {
+            RestartAndroidTempBtn.SizeChanged -= RestartAndroidTempBtn_SizeChanged;
+            RestartAndroidTempBtn.IsVisible = false;
+        }
+    }
+#endif
     private void GameVM_Victory() => RunVictoryAnimation();
 
     private void GamePage_Appearing( object? sender, EventArgs e ) => gameVM.OnPageAppearing();
