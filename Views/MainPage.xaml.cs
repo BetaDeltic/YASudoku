@@ -11,7 +11,7 @@ public partial class MainPage : ContentPage
 
         GameBtn.CommandParameter = true;
 
-        GameBtn.SetBinding( BackgroundColorProperty, nameof( MainVM.AccentColor ) );
-        GameBtn.SetBinding( Button.TextColorProperty, nameof( MainVM.ForegroundColor ) );
+        GameBtn.SetBinding( BackgroundColorProperty, nameof( MainVM.PrimaryColor ) );
+        GameBtn.SetBinding( Button.TextColorProperty, nameof( MainVM.SecondaryColor ) );
     }
 }

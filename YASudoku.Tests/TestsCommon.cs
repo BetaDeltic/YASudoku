@@ -2,6 +2,7 @@
 using Moq;
 using YASudoku.Models;
 using YASudoku.Services.JournalingServices;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.Tests;
@@ -219,6 +220,7 @@ public class TestsCommon
         Mock<IServiceProvider> serviceProviderMock = new();
         serviceProviderMock.Setup( x => x.GetService( typeof( IPlayerJournalingService ) ) ).Returns( journalingService );
         serviceProviderMock.Setup( x => x.GetService( typeof( ISettingsService ) ) ).Returns( GetSettingsMock() );
+        serviceProviderMock.Setup( x => x.GetService( typeof( IResourcesService ) ) ).Returns( GetResourcesMock() );
 
         return serviceProviderMock.Object;
     }
@@ -227,13 +229,24 @@ public class TestsCommon
     {
         var mock = new Mock<ISettingsService>();
 
-        mock.Setup( x => x.SetAccentColor( It.IsAny<AccentColors>() ) );
-        mock.Setup( x => x.GetAccentColor() ).Returns( Colors.DarkMagenta );
+        mock.Setup( x => x.SetPrimaryColor( It.IsAny<PrimaryColors>() ) );
+        mock.Setup( x => x.GetPrimaryColor() ).Returns( Colors.DarkMagenta );
         mock.Setup( x => x.SetHighlightingMistakes( It.IsAny<bool>() ) );
         mock.Setup( x => x.SetHighlightingRelatedCells( It.IsAny<bool>() ) );
         mock.Setup( x => x.CanHighlightMistakes() ).Returns( true );
         mock.Setup( x => x.CanHighlightRelatedCells() ).Returns( true );
 
+        return mock.Object;
+    }
+
+    public static IResourcesService GetResourcesMock()
+    {
+        var mock = new Mock<IResourcesService>();
+        mock.Setup( x => x.TryGetColorByName( It.IsAny<string>(), out It.Ref<Color>.IsAny ) )
+            .Callback( ( string colorName, out Color secondaryColor ) => {
+                secondaryColor = colorName == "SecondaryColor" ? Colors.White : Colors.Transparent;
+            } )
+            .Returns( true );
         return mock.Object;
     }
 

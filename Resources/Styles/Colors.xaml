@@ -41,6 +41,14 @@
     <Color x:Key="Blue200Accent">#72ACF1</Color>
     <Color x:Key="Blue300Accent">#A7CBF6</Color>
 
-    <Color x:Key="RealDarkGrey">#2F2F2F</Color>
+    <Color x:Key="SecondaryColor">White</Color>
+    <Color x:Key="DisabledPrimaryColor">#D3D3D3</Color>
+    <Color x:Key="DisabledSecondaryColor">Black</Color>
+
+    <Color x:Key="CorrectCellValue">LightBlue</Color>
+    <Color x:Key="IncorrectCellValue">Red</Color>
+
+    <Color x:Key="SelectedCellBackgroundColor">Black</Color>
+    <Color x:Key="RegularCellBackgroundColor">#2F2F2F</Color>
 
 </ResourceDictionary>

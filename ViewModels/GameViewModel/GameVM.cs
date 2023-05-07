@@ -4,6 +4,7 @@ using System.Reactive.Subjects;
 using YASudoku.Models;
 using YASudoku.Models.PuzzleGenerators;
 using YASudoku.Services.JournalingServices;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 using YASudoku.ViewModels.GameViewModel.Commands;
 using YASudoku.ViewModels.GameViewModel.VisualStates;
@@ -34,8 +35,8 @@ public partial class GameVM : VMsBase, IDisposable
     public IObservable<bool> IsAnimationRunning => isAnimationRunningSubject.AsObservable();
 
     public GameVM( IPuzzleGenerator puzzleGenerator, ISettingsService settingsService, IServiceProvider serviceProvider,
-        IPlayerJournalingService journalingService )
-        : base( settingsService )
+        IPlayerJournalingService journalingService, IResourcesService resourcesService )
+        : base( settingsService, resourcesService )
     {
         this.serviceProvider = serviceProvider;
         journal = journalingService;

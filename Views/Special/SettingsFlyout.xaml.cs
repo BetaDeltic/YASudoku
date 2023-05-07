@@ -77,17 +77,17 @@ public partial class SettingsFlyout : ContentView
 
         RelatedCellsSwitch.SetBinding( SwitchWithLabel.CommandProperty, nameof( SettingsFlyoutVM.ToggleRelatedCellsSwitchCommand ) );
         RelatedCellsSwitch.SetBinding( SwitchWithLabel.IsSwitchToggledProperty, nameof( SettingsFlyoutVM.IsHighlightRelatedEnabled ) );
-        RelatedCellsSwitch.SetBinding( SwitchWithLabel.SwitchOnColorProperty, nameof( SettingsFlyoutVM.AccentColor ) );
+        RelatedCellsSwitch.SetBinding( SwitchWithLabel.SwitchOnColorProperty, nameof( SettingsFlyoutVM.PrimaryColor ) );
 
         MistakesSwitch.BindingContext = settingsFlyoutVM;
 
         MistakesSwitch.SetBinding( SwitchWithLabel.CommandProperty, nameof( SettingsFlyoutVM.ToggleHighlightMistakesSwitchCommand ) );
         MistakesSwitch.SetBinding( SwitchWithLabel.IsSwitchToggledProperty, nameof( SettingsFlyoutVM.IsHighlightMistakesEnabled ) );
-        MistakesSwitch.SetBinding( SwitchWithLabel.SwitchOnColorProperty, nameof( SettingsFlyoutVM.AccentColor ) );
+        MistakesSwitch.SetBinding( SwitchWithLabel.SwitchOnColorProperty, nameof( SettingsFlyoutVM.PrimaryColor ) );
 
         HideBtn.SetBinding( Button.CommandProperty, nameof( SettingsFlyoutVM.HideSettingsCommand ) );
-        HideBtn.SetBinding( BackgroundColorProperty, nameof( SettingsFlyoutVM.AccentColor ) );
-        HideBtn.SetBinding( Button.TextColorProperty, nameof( SettingsFlyoutVM.ForegroundColor ) );
+        HideBtn.SetBinding( BackgroundColorProperty, nameof( SettingsFlyoutVM.PrimaryColor ) );
+        HideBtn.SetBinding( Button.TextColorProperty, nameof( SettingsFlyoutVM.SecondaryColor ) );
     }
 
     public async void SetInitialFlyoutPosition()

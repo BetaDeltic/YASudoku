@@ -3,6 +3,7 @@ using System.Diagnostics;
 using YASudoku.Views;
 using YASudoku.ViewModels.GameViewModel;
 using YASudoku.Services.SettingsService;
+using YASudoku.Services.ResourcesService;
 
 namespace YASudoku.ViewModels;
 
@@ -10,7 +11,8 @@ public partial class MainVM : VMsBase
 {
     private readonly IServiceProvider serviceProvider;
 
-    public MainVM( IServiceProvider provider ) : base( provider.GetService<ISettingsService>()! )
+    public MainVM( IServiceProvider provider )
+        : base( provider.GetService<ISettingsService>()!, provider.GetService<IResourcesService>()! )
     {
         serviceProvider = provider;
     }

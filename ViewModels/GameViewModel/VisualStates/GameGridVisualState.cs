@@ -9,7 +9,7 @@ public class GameGridVisualState
 
     public GameGridCellVisualData? SelectedCell;
 
-    private GameGridVisualDataCollection? allCells;
+    private GameGridVisualDataCollection allCells;
 
     private int highlightedNumber;
 
@@ -21,7 +21,7 @@ public class GameGridVisualState
         allCells = cellData;
     }
 
-    public void ChangeCellData( GameGridVisualDataCollection? cellData ) => allCells = cellData;
+    public void ChangeCellData( GameGridVisualDataCollection cellData ) => allCells = cellData;
 
     public void SelectNewCell( int cellIndex )
     {
@@ -56,7 +56,7 @@ public class GameGridVisualState
     {
         if ( SelectedCell == null ) return;
 
-        SelectedCell.UnhighlightCellAndNotifyRelated();
+        SelectedCell.UnhighlightCellAndNotifyRelatedCells();
         SelectedCell = null;
     }
 
@@ -64,7 +64,7 @@ public class GameGridVisualState
     {
         if ( SelectedCell == null ) return;
 
-        if ( settings.CanHighlightRelatedCells() ) SelectedCell.HighlightCellAndNotifyRelated();
+        if ( settings.CanHighlightRelatedCells() ) SelectedCell.HighlightCellAsSelectedAndNotifyRelatedCells();
         else SelectedCell.HighlightCellAsSelected();
     }
 
@@ -107,7 +107,7 @@ public class GameGridVisualState
         highlightedNumber = 0;
     }
 
-    public void UnhighlightSelectedCellAndRelatedCells() => SelectedCell?.UnhighlightCellAndNotifyRelated();
+    public void UnhighlightSelectedCellAndRelatedCells() => SelectedCell?.UnhighlightCellAndNotifyRelatedCells();
 
     public void RemoveValueFromSelectedCell( bool addToJournal = true )
     {

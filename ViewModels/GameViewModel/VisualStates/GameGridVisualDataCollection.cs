@@ -1,5 +1,6 @@
 ﻿using YASudoku.Models;
 using YASudoku.Services.JournalingServices;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
@@ -42,10 +43,11 @@ public class GameGridVisualDataCollection
     {
         ISettingsService settings = serviceProvider.GetRequiredService<ISettingsService>();
         IPlayerJournalingService journal = serviceProvider.GetRequiredService<IPlayerJournalingService>();
+        IResourcesService resources = serviceProvider.GetRequiredService<IResourcesService>();
 
         generatedCellData.ForEach( generatedCell => {
-            visualCells.Add( new( settings, journal, candidateCount, generatedCell.CellID, generatedCell.IsLockedForChanges,
-                generatedCell.UserFacingValue, generatedCell.CorrectValue ) );
+            visualCells.Add( new( settings, journal, resources, candidateCount, generatedCell.CellID,
+                generatedCell.IsLockedForChanges, generatedCell.UserFacingValue, generatedCell.CorrectValue ) );
         } );
 
         generatedCellData.ForEach( generatedCell => {

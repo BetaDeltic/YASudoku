@@ -1,6 +1,6 @@
 ﻿namespace YASudoku.Services.SettingsService;
 
-public enum AccentColors
+public enum PrimaryColors
 {
     Magenta,
     Green,
@@ -16,8 +16,8 @@ public interface ISettingsService
 {
     public event Action<bool>? MistakesHighlightingChanged;
 
-    public void SetAccentColor( AccentColors accentColor );
-    public Color GetAccentColor();
+    public void SetPrimaryColor( PrimaryColors primaryColor );
+    public Color GetPrimaryColor();
 
     public void SetHighlightingRelatedCells( bool highlightingRelatedCells );
     public bool CanHighlightRelatedCells();

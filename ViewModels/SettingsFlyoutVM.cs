@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels;
@@ -18,7 +19,7 @@ public partial class SettingsFlyoutVM : VMsBase
     private readonly ISettingsService settings;
 
     public SettingsFlyoutVM( IServiceProvider serviceProvider )
-        : base( serviceProvider.GetService<ISettingsService>()! )
+        : base( serviceProvider.GetService<ISettingsService>()!, serviceProvider.GetService<IResourcesService>()! )
     {
         settings = serviceProvider.GetService<ISettingsService>()!;
 

@@ -1,34 +1,22 @@
-﻿namespace YASudoku.ViewModels.GameViewModel.VisualStates;
+﻿using YASudoku.Services.ResourcesService;
+using YASudoku.Services.SettingsService;
+
+namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 
 public class NumPadVisualState
 {
     public event Action<int>? NewNumberSelected;
 
-    public List<NumPadButton> NumPadButtons;
+    public readonly List<NumPadButton> NumPadButtons;
 
-    public NumPadButton? SelectedButton;
-    public int SelectedButtonNumber;
+    public NumPadButton? SelectedButton { get; private set; }
+    public int SelectedButtonNumber { get; private set; }
 
-    private readonly Color enabledBackgroundColor = Colors.White;
-    private readonly Color enabledForegroundColor = Colors.DarkMagenta;
-    private readonly Color disabledBackgroundColor = Colors.LightGray;
-    private readonly Color disabledForegroundColor = Colors.Black;
-
-    public NumPadVisualState( int gridSize )
+    public NumPadVisualState( int gridSize, ISettingsService settings, IResourcesService resources )
     {
         NumPadButtons = new( gridSize );
         for ( int i = 0; i < gridSize; i++ ) {
-            NumPadButtons.Add( new(
-                activeBackgroundColor: enabledBackgroundColor,
-                activeTextColor: enabledForegroundColor,
-                inactiveBackgroundColor: enabledForegroundColor,
-                inactiveTextColor: enabledBackgroundColor,
-                disabledActiveBackgroundColor: disabledBackgroundColor,
-                disabledActiveTextColor: disabledForegroundColor,
-                disabledInactiveBackgroundColor: disabledForegroundColor,
-                disabledInactiveTextColor: disabledBackgroundColor
-                )
-            );
+            NumPadButtons.Add( new( settings, resources ) );
         }
     }
 

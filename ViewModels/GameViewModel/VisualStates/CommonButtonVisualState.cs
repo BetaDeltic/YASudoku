@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
@@ -6,24 +7,27 @@ namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 public partial class CommonButtonVisualState : ObservableObject
 {
     [ObservableProperty]
-    public Color backgroundColor = Colors.Transparent;
+    public Color _backgroundColor;
 
     [ObservableProperty]
-    public Color textColor = Colors.Transparent;
+    public Color _textColor;
 
     [ObservableProperty]
-    public bool isActive;
+    public bool _isActive;
 
-    private readonly Color foregroundColor;
-    private readonly Color accentColor;
+    private readonly Color secondaryColor;
+    private readonly Color primaryColor;
 
-    public CommonButtonVisualState( ISettingsService settings )
+    public CommonButtonVisualState( ISettingsService settings, IResourcesService resources )
     {
-        foregroundColor = SettingsService.ForegroundColor;
-        accentColor = settings.GetAccentColor();
+        primaryColor = settings.GetPrimaryColor();
+        resources.TryGetColorByName( "SecondaryColor", out secondaryColor );
 
-        TextColor = foregroundColor;
-        BackgroundColor = accentColor;
+        TextColor = secondaryColor;
+        BackgroundColor = primaryColor;
+
+        if ( _backgroundColor == null || _textColor == null )
+            throw new NullReferenceException( "Unable to initialize default colors." );
     }
 
     public void DeactivateButton()
@@ -31,8 +35,8 @@ public partial class CommonButtonVisualState : ObservableObject
         if ( !IsActive ) return;
 
         IsActive = false;
-        TextColor = foregroundColor;
-        BackgroundColor = accentColor;
+        TextColor = secondaryColor;
+        BackgroundColor = primaryColor;
     }
 
     public void ActivateButton()
@@ -40,7 +44,7 @@ public partial class CommonButtonVisualState : ObservableObject
         if ( IsActive ) return;
 
         IsActive = true;
-        TextColor = accentColor;
-        BackgroundColor = foregroundColor;
+        TextColor = primaryColor;
+        BackgroundColor = secondaryColor;
     }
 }

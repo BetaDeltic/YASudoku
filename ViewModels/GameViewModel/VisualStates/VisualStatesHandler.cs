@@ -1,6 +1,7 @@
 ﻿using System.Reactive;
 using System.Reactive.Subjects;
 using YASudoku.Common;
+using YASudoku.Services.ResourcesService;
 using YASudoku.Services.SettingsService;
 
 namespace YASudoku.ViewModels.GameViewModel.VisualStates;
@@ -55,12 +56,13 @@ public class VisualStatesHandler : IDisposable
         this.gridSize = gridSize;
         GameData = gameData;
         ISettingsService settingsService = serviceProvider.GetService<ISettingsService>()!;
+        IResourcesService resourcesService = serviceProvider.GetService<IResourcesService>()!;
 
-        PencilVS = new( settingsService );
-        EraserVS = new( settingsService );
-        PauseVS = new( settingsService );
-        OtherButtonsVS = new( settingsService );
-        NumPadVS = new( gridSize );
+        PencilVS = new( settingsService, resourcesService );
+        EraserVS = new( settingsService, resourcesService );
+        PauseVS = new( settingsService, resourcesService );
+        OtherButtonsVS = new( settingsService, resourcesService );
+        NumPadVS = new( gridSize, settingsService, resourcesService );
         GameGridVS = new( settingsService, gameData );
 
         NumPadVS.NewNumberSelected += NumPadVS_NewNumberSelected;

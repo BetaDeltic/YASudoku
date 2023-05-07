@@ -55,7 +55,8 @@ public class GameVMTestsBase
 
         IPlayerJournalingService journalingService = new PlayerJournalingService();
 
-        gameVM = new( puzzleMock.Object, TestsCommon.GetSettingsMock(), TestsCommon.GetServiceProviderMock( journalingService ), journalingService );
+        gameVM = new( puzzleMock.Object, TestsCommon.GetSettingsMock(),
+            TestsCommon.GetServiceProviderMock( journalingService ), journalingService, TestsCommon.GetResourcesMock() );
         gameVM.PrepareGameView( true );
 
         VisualState = gameVM.VisualState ?? throw new SystemException( gameDataNotInitialized );
@@ -305,14 +306,14 @@ public class GameVMTestsBase
     {
         Assert.NotNull( cell );
         Assert.NotEqual( cell, SelectedCell );
-        Assert.False( cell.IsHighlightedAsRelatedInternal );
-        Assert.False( cell.IsHighlightedAsSelectedInternal );
+        Assert.False( cell.IsHighlightedAsRelated );
+        Assert.False( cell.IsHighlightedAsSelected );
     }
 
     public void AssertNoCellIsHighlighted() => Assert.False( AreAnyCellsHighlighted() );
 
     private bool AreAnyCellsHighlighted()
-        => GameData.Any( x => x.IsHighlightedAsRelatedInternal || x.IsHighlightedAsSelectedInternal );
+        => GameData.Any( x => x.IsHighlightedAsRelated || x.IsHighlightedAsSelected );
 
     public void AssertNoOtherAndUnrelatedCellsAreHighlighted( GameGridCellVisualData? cell )
     {
@@ -323,7 +324,7 @@ public class GameVMTestsBase
     public static void AssertCellIsHighlightedAsSelected( GameGridCellVisualData? cell )
     {
         Assert.NotNull( cell );
-        Assert.True( cell.IsHighlightedAsSelectedInternal );
+        Assert.True( cell.IsHighlightedAsSelected );
     }
 
     public void AssertUnrelatedCellsWithDifferentValueAreNotHighlighted( GameGridCellVisualData? cell )
@@ -368,32 +369,32 @@ public class GameVMTestsBase
     private bool AreCellsWithSameNumberHighlightedAsSelected( int number )
         => GameData
             .Where( cell => cell.UserFacingValue == number )
-            .All( cell => cell.IsHighlightedAsSelectedInternal );
+            .All( cell => cell.IsHighlightedAsSelected );
 
     private bool AreCellsWithSameNumberHighlightedAsSelectedOrRelated( int number )
         => GameData
             .Where( cell => cell.UserFacingValue == number )
-            .All( cell => cell.IsHighlightedAsSelectedInternal || cell.IsHighlightedAsRelatedInternal );
+            .All( cell => cell.IsHighlightedAsSelected || cell.IsHighlightedAsRelated );
 
     private bool AreCellsWithDifferentNumberHighlighted( int number )
         => GameData
             .Where( cell => cell.UserFacingValue != number )
-            .Any( cell => cell.IsHighlightedAsSelectedInternal || cell.IsHighlightedAsRelatedInternal );
+            .Any( cell => cell.IsHighlightedAsSelected || cell.IsHighlightedAsRelated );
 
     private static bool AreRelatedCellsUnhighlighted( GameGridCellVisualData cell )
         => !cell.relatedCells
-            .Any( relatedCell => relatedCell.IsHighlightedAsRelatedInternal || relatedCell.IsHighlightedAsSelectedInternal );
+            .Any( relatedCell => relatedCell.IsHighlightedAsRelated || relatedCell.IsHighlightedAsSelected );
 
     private static bool AreRelatedCellsHighlightedAsRelated( GameGridCellVisualData cell )
-        => cell.relatedCells.All( relatedCell => relatedCell.IsHighlightedAsRelatedInternal );
+        => cell.relatedCells.All( relatedCell => relatedCell.IsHighlightedAsRelated );
 
     private bool AreOtherAndUnrelatedCellsHighlighted( GameGridCellVisualData cell )
         => GameData
             .Where( c => c != cell && !cell.relatedCells.Contains( c ) )
-            .Any( c => c.IsHighlightedAsRelatedInternal || c.IsHighlightedAsSelectedInternal );
+            .Any( c => c.IsHighlightedAsRelated || c.IsHighlightedAsSelected );
 
     private bool AreUnrelatedCellsWithDifferentNumberHighlighted( GameGridCellVisualData cell )
         => GameData
             .Where( c => c != cell && !cell.relatedCells.Contains( c ) && c.UserFacingValue != cell.UserFacingValue )
-            .Any( c => c.IsHighlightedAsRelatedInternal || c.IsHighlightedAsSelectedInternal );
+            .Any( c => c.IsHighlightedAsRelated || c.IsHighlightedAsSelected );
 }
