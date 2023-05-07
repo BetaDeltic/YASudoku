@@ -24,4 +24,4 @@ You may have to run `dotnet restore` before the first build. Otherwise there sho
 
 ## Conventions
 - Properties that start with an underscore are never meant to be used outside of accessor, including parent class
-- internal is used to highlight methods or properties that are only used in tests
+- internal is used to highlight methods or properties that are used in tests and could otherwise be private
