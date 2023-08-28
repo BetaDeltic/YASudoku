@@ -105,7 +105,7 @@ public partial class LabelOrNumberedGrid : ContentView
                 Label label = new() {
                     VerticalTextAlignment = TextAlignment.Center,
                     HorizontalTextAlignment = TextAlignment.Center,
-                    BindingContext = GridBindingList[ cellNumber ],
+                    BindingContext = GridBindingList[ cellNumber ]
                 };
 
                 label.SetBinding( Label.TextProperty, nameof( LabelOrNumberedGridBinding.Text ) );
