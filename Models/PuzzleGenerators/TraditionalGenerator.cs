@@ -62,9 +62,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     {
         if ( gameData == null ) {
             gameData = new GameDataContainer( gridSize, journal );
-            gameData.InitializeCellCollections(
-                cellInitHandler: _ => CellActionHandler(),
-                cellRemovedCandidateHandler: _ => CellActionHandler() );
+            gameData.InitializeCellCollections( CellInitializedHandler, CellCandidateRemovedHandler );
         } else {
             gameData.ResetContainer();
             journal.ClearJournal();
@@ -72,10 +70,28 @@ public class TraditionalGenerator : IPuzzleGenerator
         }
     }
 
-    private void CellActionHandler()
+    private void CellInitializedHandler( GameGridCell initializedCell, int initValue )
+    {
+        if ( !RunValidator() ) return;
+
+        journal.AddSubTransaction( GeneratorTransactionTypes.CellValueInitialized, initializedCell, initValue );
+    }
+
+    private void CellCandidateRemovedHandler( GameGridCell affectedCell, int removedCandidate )
+    {
+        if ( !RunValidator() ) return;
+
+        journal.AddSubTransaction( GeneratorTransactionTypes.CandidateRemoved, affectedCell, removedCandidate );
+    }
+
+    private bool RunValidator()
     {
         isValid = validator.IsValid( gameData! );
-        if ( !isValid ) CancelSource.Cancel();
+
+        if ( isValid ) return true;
+
+        CancelSource.Cancel();
+        return false;
     }
 
     private bool FillCellsWithNumbers()

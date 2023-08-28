@@ -40,13 +40,13 @@ public class GameDataContainer
     }
 
     public void InitializeCellCollections(
-        Action<GameGridCell>? cellInitHandler = null,
-        Action<GameGridCell>? cellRemovedCandidateHandler = null )
+        Action<GameGridCell, int>? cellInitHandler = null,
+        Action<GameGridCell, int>? cellRemovedCandidateHandler = null )
     {
         for ( int row = 0; row < gridSize; row++ ) {
             for ( int column = 0; column < gridSize; column++ ) {
                 int cellID = row * 9 + column;
-                GameGridCell cell = new( gridSize, cellID, journalService );
+                GameGridCell cell = new( gridSize, cellID );
 
                 if ( cellInitHandler != null ) {
                     cell.CellInitialized += cellInitHandler;

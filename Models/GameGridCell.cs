@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using YASudoku.Common;
-using YASudoku.Services.JournalingServices;
 
 namespace YASudoku.Models;
 
 [DebuggerDisplay( "ID:{CellID}, {ToString()}" )]
 public class GameGridCell
 {
-    public event Action<GameGridCell>? CellInitialized;
-    public event Action<GameGridCell>? CellCandidateRemoved;
+    public event Action<GameGridCell, int>? CellInitialized;
+    public event Action<GameGridCell, int>? CellCandidateRemoved;
 
     public readonly int CellID;
 
@@ -28,16 +27,12 @@ public class GameGridCell
     private readonly int initCandidatesCount;
     internal readonly List<GameGridCell> relatedCells = new();
 
-    private readonly IGeneratorJournalingService commandJournal;
-
     private List<int> candidates;
 
-    public GameGridCell( int candidatesCount, int id, IGeneratorJournalingService commandJournal )
+    public GameGridCell( int candidatesCount, int id )
     {
         initCandidatesCount = candidatesCount;
         CellID = id;
-
-        this.commandJournal = commandJournal;
 
         candidates = new( Enumerable.Range( 1, candidatesCount ) );
     }
@@ -64,11 +59,9 @@ public class GameGridCell
             return;
         }
 
-        commandJournal.AddSubTransaction( GeneratorTransactionTypes.CellValueInitialized, this, initValue );
-
         InitializationCommon( initValue );
 
-        CellInitialized?.Invoke( this );
+        CellInitialized?.Invoke( this, initValue );
     }
 
     private void InitializationCommon( int initValue )
@@ -122,8 +115,7 @@ public class GameGridCell
         bool success = candidates.Remove( candidate );
 
         if ( !IsInitialized && success ) {
-            commandJournal.AddSubTransaction( GeneratorTransactionTypes.CandidateRemoved, this, candidate );
-            CellCandidateRemoved?.Invoke( this );
+            CellCandidateRemoved?.Invoke( this, candidate );
         }
 
         if ( CandidatesCount == 1 ) {
