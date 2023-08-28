@@ -12,12 +12,4 @@
         ContentTemplate="{DataTemplate views:MainPage}"
         Route="MainPage" />
 
-    <ShellContent
-        ContentTemplate="{DataTemplate views:GamePage}"
-        Route="GamePage" />
-
-    <ShellContent
-        ContentTemplate="{DataTemplate views:LoadingPage}"
-        Route="LoadingPage" />
-
 </Shell>
