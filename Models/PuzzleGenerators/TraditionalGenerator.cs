@@ -51,8 +51,6 @@ public class TraditionalGenerator : IPuzzleGenerator
             journal.ClearJournal();
         }
 
-        SetCorrectValuesToFilledNumbers();
-
         RemoveNumbersForViablePuzzle();
 
         return gameData;
@@ -72,26 +70,23 @@ public class TraditionalGenerator : IPuzzleGenerator
 
     private void CellInitializedHandler( GameGridCell initializedCell, int initValue )
     {
-        if ( !RunValidator() ) return;
-
         journal.AddSubTransaction( GeneratorTransactionTypes.CellValueInitialized, initializedCell, initValue );
+
+        RunValidator();
     }
 
     private void CellCandidateRemovedHandler( GameGridCell affectedCell, int removedCandidate )
     {
-        if ( !RunValidator() ) return;
-
         journal.AddSubTransaction( GeneratorTransactionTypes.CandidateRemoved, affectedCell, removedCandidate );
+
+        RunValidator();
     }
 
-    private bool RunValidator()
+    private void RunValidator()
     {
         isValid = validator.IsValid( gameData! );
 
-        if ( isValid ) return true;
-
-        CancelSource.Cancel();
-        return false;
+        if ( !isValid ) CancelSource.Cancel();
     }
 
     private bool FillCellsWithNumbers()
@@ -131,9 +126,6 @@ public class TraditionalGenerator : IPuzzleGenerator
         }
         return true;
     }
-
-    private void SetCorrectValuesToFilledNumbers()
-        => gameData?.AllCells.ForEach( cell => cell.SetCorrectValueToUserFacingValue() );
 
     private void RemoveNumbersForViablePuzzle()
     {

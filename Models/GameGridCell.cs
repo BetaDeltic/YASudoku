@@ -13,7 +13,20 @@ public class GameGridCell
 
     public bool IsInitialized { get; private set; }
     public bool IsLockedForChanges { get; private set; }
-    public int UserFacingValue { get; private set; }
+
+    public int UserFacingValue
+    {
+        get => _userFacingValue;
+        private set {
+            _userFacingValue = value;
+            if ( IsInitialized ) return;
+
+            CellInitialized?.Invoke( this, value );
+            CorrectValue = value;
+            IsInitialized = true;
+        }
+    }
+
     public int CorrectValue { get; private set; }
 
     public bool HasCorrectValue => UserFacingValue == CorrectValue;
@@ -28,6 +41,7 @@ public class GameGridCell
     internal readonly List<GameGridCell> relatedCells = new();
 
     private List<int> candidates;
+    private int _userFacingValue;
 
     public GameGridCell( int candidatesCount, int id )
     {
@@ -52,21 +66,31 @@ public class GameGridCell
 
     public void Initialize( int initValue )
     {
+        if ( initValue == 0 ) {
+            throw new ArgumentException( "Cannot initialize cell with 0, use ResetCell(), if you need to wipe the cell." );
+        }
+
         if ( IsInitialized ) {
-            if ( !HasUserFacingValue ) {
-                InitializationCommon( initValue );
+            if ( !HasUserFacingValue ) { // Happens if cell was initialized before, but is now in the removing&solving phase
+                ReInitialize( initValue );
             }
             return;
         }
 
         InitializationCommon( initValue );
+    }
 
-        CellInitialized?.Invoke( this, initValue );
+    private void ReInitialize( int initValue )
+    {
+        if ( initValue != CorrectValue ) {
+            throw new ApplicationException( "Reinitializing cell with a different value than the correct one!" );
+        }
+
+        InitializationCommon( initValue );
     }
 
     private void InitializationCommon( int initValue )
     {
-        IsInitialized = true;
         UserFacingValue = initValue;
 
         relatedCells.ForEach( relatedCell => {
@@ -175,6 +199,4 @@ public class GameGridCell
             throw new ApplicationException( "There are no candidates left for this cell" );
         }
     }
-
-    public void SetCorrectValueToUserFacingValue() => CorrectValue = UserFacingValue;
 }

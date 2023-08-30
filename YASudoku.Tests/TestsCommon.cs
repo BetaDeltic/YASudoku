@@ -33,7 +33,6 @@ public class TestsCommon
         foreach ( (int number, int index) in sequence.Select( ( number, index ) => (number, index) ) ) {
             if ( number > 0 ) {
                 collection[ index ].Initialize( number );
-                collection[ index ].SetCorrectValueToUserFacingValue();
             }
         }
     }
