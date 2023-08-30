@@ -129,7 +129,7 @@ public class TraditionalGenerator : IPuzzleGenerator
     private void RemoveNumbersForViablePuzzle()
     {
         int cellsCount = gameData!.AllCells.Count;
-        List<int> untouchedCellIndexes = new( Enumerable.Range( 0, cellsCount - 1 ) );
+        List<int> untouchedCellIndexes = new( Enumerable.Range( 0, cellsCount ) );
         List<int> removedNumberCellIndexes = new( cellsCount );
         while ( untouchedCellIndexes.Count > 0 ) {
             RemoveValuesFromCellsOnList( removedNumberCellIndexes );
