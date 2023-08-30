@@ -15,5 +15,17 @@ public class DefaultValidator : IPuzzleValidator
     }
 
     public bool IsValid( GameDataContainer gameData )
-        => ValidatorPatterns.All( validatorPattern => validatorPattern.IsValid( gameData ) );
+    {
+        bool result = true;
+
+        Parallel.ForEach( ValidatorPatterns, ( validatorPattern, loopState ) =>
+        {
+            if ( !validatorPattern.IsValid( gameData ) ) {
+                result = false;
+                loopState.Stop();
+            }
+        } );
+
+        return result;
+    }
 }
