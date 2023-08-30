@@ -94,12 +94,10 @@ public class TraditionalGenerator : IPuzzleGenerator
         foreach ( GameGridCell cell in gameData!.AllCells ) {
             if ( cell.IsInitialized ) continue;
 
-            bool isFilled = false;
-            bool transactionReversed;
+            bool isFilled;
             do {
                 if ( CancelSource.IsCancellationRequested ) CancelSource = new();
 
-                transactionReversed = false;
                 journal.StartTransaction();
                 cell.InitializeWithRandomCandidate( random );
                 if ( !isValid ) {
@@ -107,24 +105,25 @@ public class TraditionalGenerator : IPuzzleGenerator
                     if ( cell.CandidatesCount == 1 ) return false;
 
                     journal.ReverseTransaction();
-                    transactionReversed = true;
                     continue;
                 }
 
                 isFilled = resolver.TryResolve( gameData );
 
-                if ( isValid ) continue;
+                if ( isValid ) break;
 
+                if ( cell.CandidatesCount == 1 ) return false;
                 journal.ReverseTransaction();
-                transactionReversed = true;
-            } while ( transactionReversed );
+            } while ( true );
 
             journal.CommitTransaction();
             gameData.DebugPrintGeneratedPuzzle( "Generated so far:" );
 
-            if ( isFilled ) break;
+            if ( isFilled ) return true;
         }
-        return true;
+
+        // Should never reach here
+        return false;
     }
 
     private void RemoveNumbersForViablePuzzle()
