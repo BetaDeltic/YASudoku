@@ -136,6 +136,8 @@ public class TraditionalGenerator : IPuzzleGenerator
 
             int untouchedIndex = random.Next( untouchedCellIndexes.Count );
             int cellIndexToDelete = untouchedCellIndexes[ untouchedIndex ];
+            untouchedCellIndexes.Remove( cellIndexToDelete );
+
             GameGridCell deletedValueCell = gameData.AllCells[ cellIndexToDelete ];
             deletedValueCell.RemoveUserFacingValue();
             deletedValueCell.RecalculateCandidates();
@@ -143,27 +145,17 @@ public class TraditionalGenerator : IPuzzleGenerator
             RecalculateCandidatesForRemovedNumbers( removedNumberCellIndexes );
 
             if ( resolver.TryResolve( gameData ) ) {
-                CheckSolutionValidity( removedNumberCellIndexes );
                 removedNumberCellIndexes.Add( cellIndexToDelete );
             } else {
                 deletedValueCell.ResetUserFacingValueToCorrectValue();
+                deletedValueCell.LockForUserChanges();
             }
-
-            if ( !untouchedCellIndexes.Remove( cellIndexToDelete ) )
-                throw new ApplicationException( "Trying to delete wrong index." );
         }
 
         if ( !removedNumberCellIndexes.Any() ) throw new ApplicationException( "Didn't delete anything" );
 
         RemoveValuesFromCellsOnList( removedNumberCellIndexes );
         RecalculateCandidatesForRemovedNumbers( removedNumberCellIndexes );
-        if ( !resolver.TryResolve( gameData ) )
-            throw new ApplicationException( "Resolver is unable to solve it on second attempt." );
-        CheckSolutionValidity( removedNumberCellIndexes );
-
-        RemoveValuesFromCellsOnList( removedNumberCellIndexes );
-
-        LockFilledCellsForChanges();
     }
 
     private void RemoveValuesFromCellsOnList( List<int> removedNumberCellIndexes )
@@ -171,21 +163,4 @@ public class TraditionalGenerator : IPuzzleGenerator
 
     private void RecalculateCandidatesForRemovedNumbers( List<int> removedNumberCellIndexes )
         => removedNumberCellIndexes.ForEach( index => gameData!.AllCells[ index ].RecalculateCandidates() );
-
-    private void CheckSolutionValidity( List<int> removedNumberCellIndexes )
-    {
-        removedNumberCellIndexes.ForEach( index => {
-            GameGridCell currentCell = gameData!.AllCells[ index ];
-            if ( !currentCell.HasCorrectValue )
-                throw new ApplicationException( $"Resolver did bad, cell #{currentCell.CellID}, resolver value: {currentCell.UserFacingValue}" );
-        } );
-        gameData!.AllCells.ForEach( cell => {
-            if ( !cell.HasUserFacingValue ) throw new ApplicationException( "Resolver didn't resolve everything." );
-        } );
-    }
-
-    private void LockFilledCellsForChanges()
-        => gameData!.AllCells
-        .Where( cell => cell.HasUserFacingValue )
-        .ForEach( cell => cell.LockForUserChanges() );
 }
