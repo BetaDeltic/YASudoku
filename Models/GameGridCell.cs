@@ -66,14 +66,17 @@ public class GameGridCell
 
     public void Initialize( int initValue )
     {
+        if ( IsInitialized && HasUserFacingValue ) {
+            throw new ApplicationException( "Trying to initialize already initialized cell with value." );
+        }
+
         if ( initValue == 0 ) {
-            throw new ArgumentException( "Cannot initialize cell with 0, use ResetCell(), if you need to wipe the cell." );
+            throw new ArgumentException( "Trying to initialize cell with 0." );
         }
 
         if ( IsInitialized ) {
-            if ( !HasUserFacingValue ) { // Happens if cell was initialized before, but is now in the removing&solving phase
-                ReInitialize( initValue );
-            }
+            // Happens if cell was initialized before, but is now in the removing&solving phase (i.e. Doesn't need to invoke journal and validations)
+            ReInitialize( initValue );
             return;
         }
 
