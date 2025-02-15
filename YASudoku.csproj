@@ -37,17 +37,6 @@
     <DefaultLanguage>en-us</DefaultLanguage>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>CAAF203465E54C2E4310D7CB97B8BC3AB08EB03B</PackageCertificateThumbprint>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA512</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-  </PropertyGroup>
   
   <ItemGroup>
     <!-- App Icon -->
