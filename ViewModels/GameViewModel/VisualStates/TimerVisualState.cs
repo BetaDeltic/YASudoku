@@ -11,7 +11,7 @@ public partial class TimerVisualState : ObservableObject, IDisposable
     private CancellationTokenSource? gracePeriodCts;
 
     [ObservableProperty]
-    private string _timerText = "00:00";
+    public partial string TimerText { get; set; } = "00:00";
 
     private int totalElapsedTime;
 

@@ -5,5 +5,5 @@ namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 public partial class SettingsVisualState : ObservableObject
 {
     [ObservableProperty]
-    private bool _areSettingsVisible;
+    public partial bool AreSettingsVisible { get; set; }
 }

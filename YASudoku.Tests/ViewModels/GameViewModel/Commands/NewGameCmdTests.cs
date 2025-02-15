@@ -16,7 +16,7 @@ public class NewGameCmdTests : GameCommandsTestsBase
 
     [Theory]
     [MemberData( nameof( ArrangeActions ) )]
-    public async void UnderAllCircumstances_ClickRestart_GameDataCollectionIsChanged_NoNumberIsActive_NoCellIsActive_NoButtonIsActive( Action arrangeAction )
+    public async Task UnderAllCircumstances_ClickRestart_GameDataCollectionIsChanged_NoNumberIsActive_NoCellIsActive_NoButtonIsActive( Action arrangeAction )
     {
         // Arrange
         arrangeAction();

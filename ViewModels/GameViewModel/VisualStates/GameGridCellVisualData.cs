@@ -13,37 +13,37 @@ public partial class GameGridCellVisualData : ObservableObject
     public event Action<int>? ValueFilled;
 
     [ObservableProperty]
-    public Color _backgroundColor;
+    public partial Color BackgroundColor { get; set; }
 
     [ObservableProperty]
-    public FontAttributes _fontAttribute;
+    public partial FontAttributes FontAttribute { get; set; }
 
     [ObservableProperty]
-    public bool _isLockedForChanges;
+    public partial bool IsLockedForChanges { get; set; }
 
     [ObservableProperty]
-    public Color _textColor;
+    public partial Color TextColor { get; set; }
 
     [ObservableProperty]
-    public string _userFacingText;
+    public partial string UserFacingText { get; set; }
 
     [ObservableProperty]
-    public int _userFacingValue;
+    public partial int UserFacingValue { get; set; }
 
     [ObservableProperty]
-    public bool _isShowingValue = true;
+    public partial bool IsShowingValue { get; set; } = true;
 
     [ObservableProperty]
-    public bool _isShowingCandidates;
+    public partial bool IsShowingCandidates { get; set; }
 
     [ObservableProperty]
-    private bool _isHighlightedAsSelected;
+    public partial bool IsHighlightedAsSelected { get; set; }
 
     [ObservableProperty]
-    private bool _isHighlightedAsRelated;
+    public partial bool IsHighlightedAsRelated { get; set; }
 
     [ObservableProperty]
-    private bool _isHidingAllValues;
+    public partial bool IsHidingAllValues { get; set; }
 
     public readonly int CellID;
     public int CorrectValue { get; private set; }
@@ -94,15 +94,16 @@ public partial class GameGridCellVisualData : ObservableObject
         resources.TryGetColorByName( "SelectedCellBackgroundColor", out selectedCellBackgroundColor );
         resources.TryGetColorByName( "RegularCellBackgroundColor", out regularCellBackgroundColor );
 
+        UpdateFontAttribute();
         UpdateTextColor();
         UpdateUserFacingText();
         UpdateBackgroundColor();
 
         PropertyChanged += This_PropertyChanged;
 
-        if ( _textColor == null ) throw new NullReferenceException( nameof( _textColor ) );
-        if ( _userFacingText == null ) throw new NullReferenceException( nameof( _userFacingText ) );
-        if ( _backgroundColor == null ) throw new NullReferenceException( nameof( _backgroundColor ) );
+        if ( TextColor == null ) throw new NullReferenceException( nameof( TextColor ) );
+        if ( UserFacingText == null ) throw new NullReferenceException( nameof( UserFacingText ) );
+        if ( BackgroundColor == null ) throw new NullReferenceException( nameof( BackgroundColor ) );
         if ( CandidatesGridProperties == null ) throw new NullReferenceException( nameof( relatedCells ) );
     }
 

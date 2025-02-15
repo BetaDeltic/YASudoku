@@ -8,37 +8,34 @@ public partial class NumPadButton : ObservableObject
 {
     public bool IsActive
     {
-        get => _isActive;
+        get;
         private set {
-            bool oldValue = _isActive;
-            _isActive = value;
+            bool oldValue = field;
+            field = value;
             ColorAffectingPropertyChanged?.Invoke( oldValue, value );
         }
     }
 
     public bool IsEnabled
     {
-        get => _isEnabled;
+        get;
         private set {
-            bool oldValue = _isEnabled;
-            _isEnabled = value;
+            bool oldValue = field;
+            field = value;
             ColorAffectingPropertyChanged?.Invoke( oldValue, value );
         }
     }
 
     [ObservableProperty]
-    private Color _backgroundColor;
+    public partial Color BackgroundColor { get; set; }
 
     [ObservableProperty]
-    private Color _textColor;
+    public partial Color TextColor { get; set; }
 
     [ObservableProperty]
-    private int _remainingCount;
+    public partial int RemainingCount { get; set; }
 
     private event Action<bool, bool>? ColorAffectingPropertyChanged;
-
-    private bool _isActive;
-    private bool _isEnabled;
 
     private readonly Color activeBackgroundColor;
     private readonly Color inactiveBackgroundColor;
@@ -71,7 +68,7 @@ public partial class NumPadButton : ObservableObject
         TextColor = inactiveTextColor;
         BackgroundColor = inactiveBackgroundColor;
 
-        if ( _backgroundColor == null || _textColor == null )
+        if ( BackgroundColor == null || TextColor == null )
             throw new NullReferenceException( "Color properties are not filled in constructor" );
     }
 

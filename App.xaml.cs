@@ -10,8 +10,6 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        MainPage = new AppShell();
-
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
 
@@ -32,7 +30,7 @@ public partial class App : Application
 #if WINDOWS
     protected override Window CreateWindow( IActivationState? activationState )
     {
-        Window window = base.CreateWindow( activationState );
+        Window window = new(new AppShell());
         window.Activated += Window_Activated;
         return window;
     }
@@ -65,5 +63,11 @@ public partial class App : Application
         window.Activated -= Window_Activated;
     }
 
+#elif ANDROID
+    protected override Window CreateWindow( IActivationState? activationState )
+    {
+        Window window = new( new AppShell() );
+        return window;
+    }
 #endif
 }

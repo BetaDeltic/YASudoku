@@ -7,13 +7,13 @@ namespace YASudoku.ViewModels.GameViewModel.VisualStates;
 public partial class CommonButtonVisualState : ObservableObject
 {
     [ObservableProperty]
-    public Color _backgroundColor;
+    public partial Color BackgroundColor { get; set; }
 
     [ObservableProperty]
-    public Color _textColor;
+    public partial Color TextColor { get; set; }
 
     [ObservableProperty]
-    public bool _isActive;
+    public partial bool IsActive { get; set; }
 
     private readonly Color secondaryColor;
     private readonly Color primaryColor;
@@ -26,7 +26,7 @@ public partial class CommonButtonVisualState : ObservableObject
         TextColor = secondaryColor;
         BackgroundColor = primaryColor;
 
-        if ( _backgroundColor == null || _textColor == null )
+        if ( BackgroundColor == null || TextColor == null )
             throw new NullReferenceException( "Unable to initialize default colors." );
     }
 

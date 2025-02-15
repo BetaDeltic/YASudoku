@@ -90,14 +90,8 @@ public partial class SettingsFlyout : ContentView
         HideBtn.SetBinding( Button.TextColorProperty, nameof( SettingsFlyoutVM.SecondaryColor ) );
     }
 
-    public async void SetInitialFlyoutPosition()
-    {
-        await RollOutAsync( 0 ); // Immediately roll out of the screen
-        IsVisible = true; // Enable visibility outside of screen
-        await Dispatcher.DispatchAsync( () => { } ); // Wait for UI to be able to measure the flyout width
-        await RollOutAsync( 0 ); // Move the X position to just outside the screen
-        IsVisible = false; // Disable visibility again
-    }
+    public async Task SetInitialFlyoutPosition()
+        => await MoveOutOfView();
 
     private async void FlyoutVisibilityChanging( bool oldVisibility, bool newVisibility )
     {
@@ -131,9 +125,14 @@ public partial class SettingsFlyout : ContentView
     {
         if ( settingsFlyoutVM == null ) return;
 
+        await MoveOutOfView( lengthInMilliseconds );
+        await this.FadeTo( 0, lengthInMilliseconds );
+    }
+
+    private async Task MoveOutOfView( uint lengthInMilliseconds = 0 )
+    {
         double hidingDistance = GetSufficientDistanceToHideTheFlyout();
         await this.TranslateTo( -hidingDistance, 0, lengthInMilliseconds );
-        await this.FadeTo( 0, lengthInMilliseconds );
     }
 
     private double GetSufficientDistanceToHideTheFlyout()

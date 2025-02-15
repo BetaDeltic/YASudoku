@@ -7,10 +7,10 @@ namespace YASudoku.ViewModels;
 public partial class VMsBase : ObservableObject
 {
     [ObservableProperty]
-    private Color _primaryColor;
+    public partial Color PrimaryColor { get; set; }
 
     [ObservableProperty]
-    private Color _secondaryColor;
+    public partial Color SecondaryColor { get; set; }
 
     private readonly ISettingsService settings;
 
@@ -22,7 +22,7 @@ public partial class VMsBase : ObservableObject
         resourcesService.TryGetColorByName( "SecondaryColor", out Color secondaryColor );
         SecondaryColor = secondaryColor;
 
-        if ( _primaryColor == null || _secondaryColor == null )
+        if ( PrimaryColor == null || SecondaryColor == null )
             throw new NullReferenceException( "Unable to initialize default colors." );
     }
 }

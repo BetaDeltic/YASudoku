@@ -297,7 +297,7 @@ public partial class GamePage : ContentPage
 
         if ( !( Width > 0 ) ) return;
 
-        SettingsFlyout.SetInitialFlyoutPosition();
+        await SettingsFlyout.SetInitialFlyoutPosition();
         PropertyChanged -= GamePage_PropertyChanged;
     }
 }

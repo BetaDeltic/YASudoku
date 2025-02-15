@@ -5,14 +5,14 @@ namespace YASudoku.Controls.ControlBindings;
 public partial class LabelOrNumberedGridBinding : ObservableObject
 {
     [ObservableProperty]
-    private string text = string.Empty;
+    public partial string Text { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool isVisible = true;
+    public partial bool IsVisible { get; set; } = true;
 
     [ObservableProperty]
-    private Color backgroundColor = Colors.Transparent;
+    public partial Color BackgroundColor { get; set; } = Colors.Transparent;
 
     [ObservableProperty]
-    private Color textColor = Colors.Transparent;
+    public partial Color TextColor { get; set; } = Colors.Transparent;
 }
